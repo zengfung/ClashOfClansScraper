@@ -12,7 +12,6 @@ class ClashOfClansAPI:
         """
         Initialize class with API endpoint, bearer token, and API call timeout.
 
-        Arguments
         """
         self.api_endpoint = "https://api.clashofclans.com/v1"
         self.token = token

@@ -16,10 +16,10 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-activate-base: false
-          activate-environment: clash_of_clans
+          activate-environment: clash-of-clans
+          condarc-file: etc/example-condarc.yml
           environment-file: environment.yml
       - run: |
-          conda activate clash_of_clans
           conda info
           conda list
       - name: "Run Clash of Clans data scraping."

@@ -1,4 +1,4 @@
-name: clash_of_clans
+name: clash-of-clans
 dependencies:
   - python=3.9
   - numpy
