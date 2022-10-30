@@ -26,7 +26,6 @@ class ClashOfClansAPI:
         """
         Makes a call to the API endpoint.
 
-        Arguments
         """
         try:
             url = self.api_endpoint + uri

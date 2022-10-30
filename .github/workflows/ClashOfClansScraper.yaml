@@ -10,6 +10,9 @@ on:
 jobs:
   ClashOfClansScraper:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: powershell
     steps:
       - uses: actions/checkout@v2
       - name: "Activate Conda environment."
