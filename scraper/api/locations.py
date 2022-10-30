@@ -1,5 +1,4 @@
-from pickletools import int4
-from scraper import ClashOfClansAPI
+from scraper.api import ClashOfClansAPI
 from typing import Dict
 
 class Locations(ClashOfClansAPI):

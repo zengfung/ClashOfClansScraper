@@ -1,4 +1,4 @@
-from scraper import ClashOfClansAPI
+from scraper.api import ClashOfClansAPI
 
 class Players(ClashOfClansAPI):
     def __init__(self, player_tag:str, token:str, timeout:int = 30) -> None:

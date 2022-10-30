@@ -1,0 +1,1 @@
+from .gold_pass_db import update_goldpass_season_table

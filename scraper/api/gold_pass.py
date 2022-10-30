@@ -1,4 +1,4 @@
-from scraper import ClashOfClansAPI
+from scraper.api import ClashOfClansAPI
 
 class GoldPass(ClashOfClansAPI):
     def __init__(self,

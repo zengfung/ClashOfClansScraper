@@ -1,4 +1,4 @@
-from scraper import ClashOfClansAPI
+from scraper.api import ClashOfClansAPI
 from typing import Dict
 
 class Leagues(ClashOfClansAPI):
