@@ -25,7 +25,6 @@ class ClashOfClansAPI:
             params:Dict = None) -> Dict:
         """
         Makes a call to the API endpoint.
-
         """
         try:
             url = self.api_endpoint + uri
