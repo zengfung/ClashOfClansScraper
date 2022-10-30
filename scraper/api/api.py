@@ -11,7 +11,6 @@ class ClashOfClansAPI:
                  timeout:int = 30) -> None:
         """
         Initialize class with API endpoint, bearer token, and API call timeout.
-
         """
         self.api_endpoint = "https://api.clashofclans.com/v1"
         self.token = token

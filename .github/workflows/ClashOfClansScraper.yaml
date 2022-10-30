@@ -17,7 +17,7 @@ jobs:
         with:
           auto-activate-base: false
           activate-environment: clash-of-clans
-          condarc-file: etc/example-condarc.yml
+          condarc-file: condarc.yml
           environment-file: environment.yml
       - run: |
           conda info
