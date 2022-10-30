@@ -1,0 +1,5 @@
+name: clash_of_clans
+dependencies:
+  - python=3.9
+  - numpy
+  - pandas

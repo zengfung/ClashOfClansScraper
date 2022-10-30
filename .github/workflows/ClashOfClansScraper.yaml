@@ -1,0 +1,28 @@
+name: ClashOfClansScraper
+on:
+  schedule:
+    - cron: 0 0 * * *
+  push:
+    paths:
+    - scraper/**
+    - main.py
+  workflow_dispatch:
+jobs:
+  ClashOfClansScraper:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Activate Conda environment."
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          activate-environment: clash_of_clans
+          environment-file: environment.yml
+      - name: "Verify Conda environment information."
+        run: |
+          conda info
+          conda list
+      - name: "Run Clash of Clans data scraping."
+        run: |
+          python main.py --token ${{ secrets.COC_API_TOKEN }} --verbosity 2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
