@@ -19,6 +19,7 @@ jobs:
           activate-environment: clash_of_clans
           environment-file: environment.yml
       - run: |
+          conda activate clash_of_clans
           conda info
           conda list
       - name: "Run Clash of Clans data scraping."
