@@ -1,7 +1,35 @@
+import argparse
+import logging
 from scraper import api
 from scraper import database
 
-token = '<insert-token-here>'
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-t', '--token', help="Bearer token to access the Clash of Clans API.", type=str, required=True)
+    parser.add_argument('-o', '--output', help="Dataset output directory.", type=str, required=False, default="./data")
+    parser.add_argument('-v', '--verbosity', help="Increase output verbosity.", type=int, required=False, default=0, choices=[0,1,2])
+    args = parser.parse_args()
+    return args
+
+def get_log_level(verbosity:int):
+    if verbosity == 0:
+        return logging.WARNING
+    elif verbosity == 1:
+        return logging.INFO
+    else:       # verbosity == 2
+        return logging.DEBUG
+
+def main():
+    args = parse_args()
+
+    logging.basicConfig(format='%(asctime)s - %(module)s.%(funcName)s - %(message)s', 
+                        level=get_log_level(args.verbosity))
+
+    logging.info("Updating Gold Pass Season Table...")
+    database.update_goldpass_season_table(args.token, args.output)
+
+if __name__ == '__main__':
+    main()
 
 # print(Clans("%239J82VUV", token).get_current_warleague_group())         # Unknown
 # print(Clans("%239J82VUV", token).get_warleague_war())                   # Unknown
@@ -11,8 +39,8 @@ token = '<insert-token-here>'
 # print(Clans("%239J82VUV", token).get_clan_info())                       # Success
 # print(Clans("%239J82VUV", token).get_clan_members(limit=2))             # Success
 
-print(api.GoldPass(token).get_current_season())                             # Success
-database.update_goldpass_season_table(token, "./data")
+# print(api.GoldPass(token).get_current_season())                         # Success
+# database.update_goldpass_season_table(token, "./data")
 
 # print(Players("%23Y9VG28UL", token).get_player_info())                  # Success
 
