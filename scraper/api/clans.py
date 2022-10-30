@@ -2,6 +2,9 @@ from scraper.api import ClashOfClansAPI
 from typing import Dict
 
 class Clans(ClashOfClansAPI):
+    """
+    Class to call clan related APIs.
+    """
     def __init__(self, clan_tag:str, token:str, timeout:int = 30) -> None:
         self.clan_tag = clan_tag
         ClashOfClansAPI.__init__(self, token, timeout)
