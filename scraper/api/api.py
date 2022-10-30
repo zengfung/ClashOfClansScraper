@@ -23,6 +23,9 @@ class ClashOfClansAPI:
     def get(self, 
             uri:str, 
             params:Dict = None) -> Dict:
+        """
+        Makes a call to the API endpoint.
+        """
         try:
             url = self.api_endpoint + uri
             response = requests.get(url, params=params, headers=self.headers, timeout=self.timeout)
