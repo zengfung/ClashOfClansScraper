@@ -1,11 +1,14 @@
 import argparse
+import asyncio
+import coc
 import logging
 from scraper import api
 from scraper import database
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--token', help="Bearer token to access the Clash of Clans API.", type=str, required=True)
+    parser.add_argument('-e', '--email', help="Email account to access the Clash of Clans API.", type=str, required=True)
+    parser.add_argument('-p', '--password', help="Password to access the Clash of Clans API.", type=str, required=True)
     parser.add_argument('-o', '--output', help="Dataset output directory.", type=str, required=False, default="./data")
     parser.add_argument('-v', '--verbosity', help="Increase output verbosity.", type=int, required=False, default=0, choices=[0,1,2])
     args = parser.parse_args()
@@ -19,17 +22,24 @@ def get_log_level(verbosity:int):
     else:       # verbosity == 2
         return logging.DEBUG
 
-def main():
+async def main():
     args = parse_args()
 
-    logging.basicConfig(format='%(asctime)s - %(module)s.%(funcName)s - %(message)s', 
+    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s', 
                         level=get_log_level(args.verbosity))
 
+    logging.info("Calling the Clash of Clans client...")
+    client = coc.Client()
+    await client.login(args.email, args.password)
+
     logging.info("Updating Gold Pass Season Table...")
-    database.update_goldpass_season_table(args.token, args.output)
+    season = await client.get_current_goldpass_season()
+    logging.info(season)
+
+    await client.close()
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())
 
 # print(Clans("%239J82VUV", token).get_current_warleague_group())         # Unknown
 # print(Clans("%239J82VUV", token).get_warleague_war())                   # Unknown

@@ -1,7 +1,7 @@
 name: ClashOfClansScraper
 on:
   schedule:
-    - cron: 0 0 * * *
+    - cron: 0 0 * * 0
   push:
     paths:
     - scraper/**
@@ -27,6 +27,6 @@ jobs:
           conda list
       - name: "Run Clash of Clans data scraping."
         run: |
-          python main.py --token ${{ secrets.COC_API_TOKEN }} --verbosity 2
+          python main.py --email ${{ secrets.COC_EMAIL }} --password ${{ secrets.COC_PASSWORD}} --verbosity 2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
