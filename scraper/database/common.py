@@ -10,5 +10,5 @@ def create_or_append_table(df:pd.DataFrame, dir:str, filename:str):
         LOGGER.debug(f'File {path} exists, appending data...')
         df.to_csv(path, mode='a', index=False, header=False)
     else:
-        LOGGER.debug(f'Does {path} does not exist, writing data as a new file...')
+        LOGGER.debug(f'File {path} does not exist, writing data as a new file...')
         df.to_csv(path, mode='w', index=False, header=True)

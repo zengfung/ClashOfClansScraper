@@ -2,8 +2,8 @@ import argparse
 import asyncio
 import coc
 import logging
-from scraper import api
 from scraper import database
+from scraper.database.gold_pass_db import update_goldpass_season_table
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -33,8 +33,7 @@ async def main():
     await client.login(args.email, args.password)
 
     logging.info("Updating Gold Pass Season Table...")
-    season = await client.get_current_goldpass_season()
-    logging.info(season)
+    await update_goldpass_season_table(client, args.output)
 
     await client.close()
 
