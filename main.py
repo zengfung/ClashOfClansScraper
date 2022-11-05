@@ -35,7 +35,7 @@ async def main():
     await update_goldpass_season_table(client, args.output)
 
     logging.info("Updating Heroes Table...")
-    get_hero_data(client, "Archer Queen")
+    create_dataframe_for_ingame_data(client, get_all_hero_data, args.output)
 
     await client.close()
 

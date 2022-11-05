@@ -1,2 +1,2 @@
 from .gold_pass import update_goldpass_season_table
-from .in_game import get_hero_data
+from .in_game import create_dataframe_for_ingame_data, get_all_hero_data
