@@ -1,1 +1,1 @@
-import scraper.database
+from .gold_pass import update_goldpass_season_table

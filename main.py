@@ -2,8 +2,7 @@ import argparse
 import asyncio
 import coc
 import logging
-from scraper import database
-from scraper.database.gold_pass_db import update_goldpass_season_table
+from scraper import *
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -30,10 +29,12 @@ async def main():
 
     logging.info("Calling the Clash of Clans client...")
     client = coc.Client()
-    await client.login(args.email, args.password)
+    await client.login(args.email, args.password, load_game_data=coc.LoadGameData(default=True))
 
     logging.info("Updating Gold Pass Season Table...")
     await update_goldpass_season_table(client, args.output)
+
+    logging.info("")
 
     await client.close()
 
