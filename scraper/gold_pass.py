@@ -3,13 +3,11 @@ import coc
 import pandas as pd
 import scraper.common
 from datetime import datetime
-from typing import Dict
-from pathlib import Path
 
 FILENAME = "goldpass.csv"
 LOGGER = logging.getLogger(__name__)
 
-async def update_goldpass_season_table(client:coc.Client, dir:str):
+async def update_goldpass_season_table(client:coc.Client, dir:str) -> None:
 
     LOGGER.debug('Scraping Gold Pass data.')
     season_id = datetime.now().strftime('%Y-%m') 
@@ -21,7 +19,7 @@ async def update_goldpass_season_table(client:coc.Client, dir:str):
     LOGGER.debug(f'Creating or appending data to {dir}/{FILENAME}')
     scraper.common.create_or_append_table(df, dir, FILENAME)
 
-def create_goldpass_dataframe(season_id:str, info:coc):
+def create_goldpass_dataframe(season_id:str, info:coc) -> pd.DataFrame:
     LOGGER.debug(f'Creating Gold Pass data frame with 1 row of data...')
     df = pd.DataFrame({
         'seasonId': [season_id],

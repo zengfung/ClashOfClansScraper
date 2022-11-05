@@ -34,7 +34,8 @@ async def main():
     logging.info("Updating Gold Pass Season Table...")
     await update_goldpass_season_table(client, args.output)
 
-    logging.info("")
+    logging.info("Updating Heroes Table...")
+    get_hero_data(client, "Archer Queen")
 
     await client.close()
 
