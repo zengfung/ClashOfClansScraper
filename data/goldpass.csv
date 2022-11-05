@@ -1,2 +1,3 @@
 seasonId,startTime,endTime,duration
 2022-11,"<Timestamp time=datetime.datetime(2022, 11, 1, 8, 1) seconds_until=-343315>","<Timestamp time=datetime.datetime(2022, 12, 1, 8, 0) seconds_until=2248624>",29 days 23:59:00
+2022-11,"<Timestamp time=datetime.datetime(2022, 11, 1, 8, 1) seconds_until=-344615>","<Timestamp time=datetime.datetime(2022, 12, 1, 8, 0) seconds_until=2247324>",29 days 23:59:00

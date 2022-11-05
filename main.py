@@ -28,8 +28,8 @@ async def main():
                         level=get_log_level(args.verbosity))
 
     logging.info("Calling the Clash of Clans client...")
-    client = coc.Client()
-    await client.login(args.email, args.password, load_game_data=coc.LoadGameData(default=True))
+    client = coc.Client(load_game_data=coc.LoadGameData(default=True))
+    await client.login(args.email, args.password)
 
     logging.info("Updating Gold Pass Season Table...")
     await update_goldpass_season_table(client, args.output)
