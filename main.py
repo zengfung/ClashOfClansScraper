@@ -35,7 +35,14 @@ async def main():
     await update_goldpass_season_table(client, args.output)
 
     logging.info("Updating Heroes Table...")
-    create_dataframe_for_ingame_data(client, get_all_hero_data, args.output)
+    create_dataframe_for_ingame_data(client, "hero", args.output)
+    
+    logging.info("Updating Pets Table...")
+    create_dataframe_for_ingame_data(client, "pet", args.output)
+    
+    logging.info("Updating Troops Table...")
+    create_dataframe_for_ingame_data(client, "home_troop", args.output)
+    create_dataframe_for_ingame_data(client, "super_troop", args.output)
 
     await client.close()
 
