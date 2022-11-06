@@ -228,3 +228,47 @@ id,name,range,dps,ground_target,hitpoints,speed,upgrade_cost,upgrade_resource,up
 4000092,Battle Drill,100,470,True,4900,300,11000000,elixir,2419200,1200,False,False,True,False,,,,,2
 4000092,Battle Drill,100,510,True,5200,300,14000000,elixir,2764800,1200,False,False,True,False,,,,,3
 4000092,Battle Drill,100,550,True,5500,300,14000000,elixir,2764800,1200,False,False,True,False,,,,,4
+4000026,Super Barbarian,60,180,True,1000,250,,elixir,,25,True,False,False,True,518400,518400,7,4000000,1
+4000026,Super Barbarian,60,200,True,1100,250,,elixir,,25,True,False,False,True,518400,518400,7,4000000,2
+4000026,Super Barbarian,60,220,True,1200,250,,elixir,,25,True,False,False,True,518400,518400,7,4000000,3
+4000026,Super Barbarian,60,240,True,1300,250,,elixir,,25,True,False,False,True,518400,518400,7,4000000,4
+4000027,Super Archer,600,120,True,450,300,,elixir,,72,True,False,False,True,518400,518400,7,4000001,1
+4000027,Super Archer,600,132,True,510,300,,elixir,,72,True,False,False,True,518400,518400,7,4000001,2
+4000027,Super Archer,600,144,True,550,300,,elixir,,72,True,False,False,True,518400,518400,7,4000001,3
+4000027,Super Archer,600,156,True,600,300,,elixir,,72,True,False,False,True,518400,518400,7,4000001,4
+4000029,Super Giant,100,130,True,4000,150,,elixir,,60,True,False,False,True,518400,518400,8,4000003,1
+4000029,Super Giant,100,140,True,4200,150,,elixir,,60,True,False,False,True,518400,518400,8,4000003,2
+4000029,Super Giant,100,150,True,4400,150,,elixir,,60,True,False,False,True,518400,518400,8,4000003,3
+4000055,Sneaky Goblin,40,155,True,270,400,,elixir,,21,True,False,False,True,518400,518400,6,4000002,1
+4000055,Sneaky Goblin,40,170,True,320,400,,elixir,,21,True,False,False,True,518400,518400,6,4000002,2
+4000028,Super Wall Breaker,60,78,True,350,350,,elixir,,60,True,False,False,True,518400,518400,6,4000004,1
+4000028,Super Wall Breaker,60,100,True,400,350,,elixir,,60,True,False,False,True,518400,518400,6,4000004,2
+4000028,Super Wall Breaker,60,120,True,450,350,,elixir,,60,True,False,False,True,518400,518400,6,4000004,3
+4000028,Super Wall Breaker,60,130,True,475,350,,elixir,,60,True,False,False,True,518400,518400,6,4000004,4
+4000028,Super Wall Breaker,60,140,True,500,350,,elixir,,60,True,False,False,True,518400,518400,6,4000004,5
+4000057,Rocket Balloon,,236,True,840,150,,elixir,,48,True,False,False,True,518400,518400,7,4000005,1
+4000057,Rocket Balloon,,256,True,940,150,,elixir,,48,True,False,False,True,518400,518400,7,4000005,2
+4000057,Rocket Balloon,,276,True,1040,150,,elixir,,48,True,False,False,True,518400,518400,7,4000005,3
+4000083,Super Wizard,350,220,True,450,250,,elixir,,75,True,False,False,True,518400,518400,8,4000006,1
+4000083,Super Wizard,350,240,True,500,250,,elixir,,75,True,False,False,True,518400,518400,8,4000006,2
+4000083,Super Wizard,350,260,True,550,250,,elixir,,75,True,False,False,True,518400,518400,8,4000006,3
+4000081,Super Dragon,300,80,True,6100,175,,elixir,,360,True,False,False,True,518400,518400,6,4000008,1
+4000081,Super Dragon,300,85,True,6400,175,,elixir,,360,True,False,False,True,518400,518400,6,4000008,2
+4000081,Super Dragon,300,90,True,6700,175,,elixir,,360,True,False,False,True,518400,518400,6,4000008,3
+4000063,Inferno Dragon,350,75,True,1900,225,,elixir,,135,True,False,False,True,518400,518400,5,4000023,1
+4000063,Inferno Dragon,350,79,True,2050,225,,elixir,,135,True,False,False,True,518400,518400,5,4000023,2
+4000063,Inferno Dragon,350,83,True,2200,225,,elixir,,135,True,False,False,True,518400,518400,5,4000023,3
+4000084,Super Minion,350,300,True,1500,200,,dark_elixir,,108,False,True,False,True,518400,518400,7,4000010,1
+4000084,Super Minion,350,325,True,1600,200,,dark_elixir,,108,False,True,False,True,518400,518400,7,4000010,2
+4000084,Super Minion,350,350,True,1700,200,,dark_elixir,,108,False,True,False,True,518400,518400,7,4000010,3
+4000084,Super Minion,350,360,True,1800,200,,dark_elixir,,108,False,True,False,True,518400,518400,7,4000010,4
+4000064,Super Valkyrie,50,250,True,2400,300,,dark_elixir,,225,False,True,False,True,518400,518400,6,4000012,1
+4000064,Super Valkyrie,50,300,True,2700,300,,dark_elixir,,225,False,True,False,True,518400,518400,6,4000012,2
+4000064,Super Valkyrie,50,325,True,2900,300,,dark_elixir,,225,False,True,False,True,518400,518400,6,4000012,3
+4000066,Super Witch,400,360,True,3200,150,75000.0,dark_elixir,1036800.0,400,False,True,False,True,518400,518400,4,4000015,1
+4000066,Super Witch,400,390,True,3400,150,75000.0,dark_elixir,1036800.0,400,False,True,False,True,518400,518400,4,4000015,2
+4000076,Ice Hound,25,10,True,9500,250,,dark_elixir,,400,False,True,False,True,518400,518400,4,4000017,1
+4000076,Ice Hound,25,15,True,10000,250,,dark_elixir,,400,False,True,False,True,518400,518400,4,4000017,2
+4000080,Super Bowler,300,170,True,1600,175,,dark_elixir,,300,False,True,False,True,518400,518400,3,4000022,1
+4000080,Super Bowler,300,185,True,1800,175,,dark_elixir,,300,False,True,False,True,518400,518400,3,4000022,2
+4000080,Super Bowler,300,200,True,2000,175,,dark_elixir,,300,False,True,False,True,518400,518400,3,4000022,3

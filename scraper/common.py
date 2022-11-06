@@ -31,7 +31,13 @@ def has_new_unique_rows(df_new:pd.DataFrame, path:Path) -> bool:
     df_old = pd.read_csv(path)
     
     LOGGER.debug(f'Getting rows in new dataframe that is unique from old dataframe.')
-    df_new.drop(df_new[df_new.isin(df_old)].index, inplace=True)
+    # Set all columns as index, then perform masking to find rows in df_new that are not present in df_old
+    cols = list(df_new.columns)
+    df_new_index = df_new.set_index(cols).index
+    df_old_index = df_old.set_index(cols).index
+    mask = df_new_index.isin(df_old_index)
+    df_new.drop(df_new[mask].index, inplace=True)
+    
     if len(df_new) > 0:
         return True
     else:

@@ -8,7 +8,6 @@ FILENAME = "goldpass.csv"
 LOGGER = logging.getLogger(__name__)
 
 async def update_goldpass_season_table(client:coc.Client, dir:str) -> None:
-
     LOGGER.debug('Scraping Gold Pass data.')
     season_id = datetime.now().strftime('%Y-%m') 
     goldpass_info = await client.get_current_goldpass_season()

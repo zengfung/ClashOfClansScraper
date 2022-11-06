@@ -47,37 +47,10 @@ async def main():
     logging.info("Updating Spells Table...")
     create_dataframe_for_ingame_data(client, "spell", args.output)
 
+    logging.info('Updating Players Table...')
+    await update_players_table(client, args.output)
+
     await client.close()
 
 if __name__ == '__main__':
     asyncio.run(main())
-
-# print(Clans("%239J82VUV", token).get_current_warleague_group())         # Unknown
-# print(Clans("%239J82VUV", token).get_warleague_war())                   # Unknown
-# print(Clans("%239J82VUV", token).get_warlog(limit=2))                   # Success (Requires clan to set war log to public)
-# print(Clans("%239J82VUV", token).search_clans(name='atas',limit=2))     # Success
-# print(Clans("%239J82VUV", token).get_current_war())                     # Success (Requires clan to set war log to public)
-# print(Clans("%239J82VUV", token).get_clan_info())                       # Success
-# print(Clans("%239J82VUV", token).get_clan_members(limit=2))             # Success
-
-# print(api.GoldPass(token).get_current_season())                         # Success
-# database.update_goldpass_season_table(token, "./data")
-
-# print(Players("%23Y9VG28UL", token).get_player_info())                  # Success
-
-# print(Labels(token).get_clans_labels(limit=2))                          # Success
-# print(Labels(token).get_players_labels(limit=2))                        # Success
-
-# print(Locations("32000009", token).list_locations(limit=2))             # Success
-# print(Locations("32000009", token).get_location_info())                 # Success
-# print(Locations("32000009", token).get_player_versus_rankings(limit=2)) # Success (Must be location id for country)
-# print(Locations("32000009", token).get_clan_versus_rankings(limit=2))   # Success (Must be location id for country)
-# print(Locations("32000009", token).get_player_rankings(limit=2))        # Success (Must be location id for country)
-# print(Locations("32000009", token).get_clans_rankings(limit=2))         # Success (Must be location id for country)
-
-# print(Leagues(token).get_leagues(limit=2))                              # Success
-# print(Leagues(token).get_league_season_ranking("29000022", "2015-07"))  # Success (Only for Legend League - 29000022)
-# print(Leagues(token).get_league_info("29000001"))                       # Success
-# print(Leagues(token).get_league_seasons("29000022", limit=2))           # Success (Only for Legend League - 29000022)
-# print(Leagues(token).get_warleague_info("48000001"))                    # Success
-# print(Leagues(token).get_warleagues(limit=2))                           # Success
