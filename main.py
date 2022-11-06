@@ -44,6 +44,9 @@ async def main():
     create_dataframe_for_ingame_data(client, "home_troop", args.output)
     create_dataframe_for_ingame_data(client, "super_troop", args.output)
 
+    logging.info("Updating Spells Table...")
+    create_dataframe_for_ingame_data(client, "spell", args.output)
+
     await client.close()
 
 if __name__ == '__main__':

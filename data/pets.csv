@@ -1,0 +1,81 @@
+id,name,range,dps,ground_target,hitpoints,speed,upgrade_cost,upgrade_resource,upgrade_time,level
+0,L.A.S.S.I,60,150,True,2700,400,115000,dark_elixir,518400,1
+0,L.A.S.S.I,60,160,True,2800,400,130000,dark_elixir,691200,2
+0,L.A.S.S.I,60,170,True,2900,400,145000,dark_elixir,864000,3
+0,L.A.S.S.I,60,180,True,3000,400,160000,dark_elixir,950400,4
+0,L.A.S.S.I,60,190,True,3100,400,175000,dark_elixir,1036800,5
+0,L.A.S.S.I,60,200,True,3200,400,190000,dark_elixir,1123200,6
+0,L.A.S.S.I,60,210,True,3300,400,205000,dark_elixir,1209600,7
+0,L.A.S.S.I,60,220,True,3400,400,220000,dark_elixir,1296000,8
+0,L.A.S.S.I,60,230,True,3500,400,235000,dark_elixir,1382400,9
+0,L.A.S.S.I,60,240,True,3600,400,235000,dark_elixir,1382400,10
+0,Electro Owl,550,100,True,1600,250,135000,dark_elixir,518400,1
+0,Electro Owl,550,105,True,1700,250,150000,dark_elixir,691200,2
+0,Electro Owl,550,110,True,1800,250,165000,dark_elixir,864000,3
+0,Electro Owl,550,115,True,1900,250,180000,dark_elixir,950400,4
+0,Electro Owl,550,120,True,2000,250,195000,dark_elixir,1036800,5
+0,Electro Owl,550,125,True,2100,250,210000,dark_elixir,1123200,6
+0,Electro Owl,550,130,True,2200,250,225000,dark_elixir,1209600,7
+0,Electro Owl,550,135,True,2300,250,240000,dark_elixir,1296000,8
+0,Electro Owl,550,140,True,2400,250,255000,dark_elixir,1382400,9
+0,Electro Owl,550,145,True,2500,250,255000,dark_elixir,1382400,10
+0,Mighty Yak,120,60,True,3750,300,165000,dark_elixir,518400,1
+0,Mighty Yak,120,64,True,4000,300,185000,dark_elixir,691200,2
+0,Mighty Yak,120,68,True,4250,300,205000,dark_elixir,864000,3
+0,Mighty Yak,120,72,True,4500,300,225000,dark_elixir,950400,4
+0,Mighty Yak,120,76,True,4750,300,245000,dark_elixir,1036800,5
+0,Mighty Yak,120,80,True,4950,300,255000,dark_elixir,1123200,6
+0,Mighty Yak,120,84,True,5100,300,265000,dark_elixir,1209600,7
+0,Mighty Yak,120,88,True,5250,300,275000,dark_elixir,1296000,8
+0,Mighty Yak,120,92,True,5400,300,285000,dark_elixir,1382400,9
+0,Mighty Yak,120,96,True,5550,300,285000,dark_elixir,1382400,10
+0,Unicorn,250,-50,True,1400,200,210000,dark_elixir,518400,1
+0,Unicorn,250,-53,True,1450,200,220000,dark_elixir,691200,2
+0,Unicorn,250,-56,True,1500,200,230000,dark_elixir,864000,3
+0,Unicorn,250,-58,True,1550,200,240000,dark_elixir,950400,4
+0,Unicorn,250,-60,True,1600,200,250000,dark_elixir,1036800,5
+0,Unicorn,250,-62,True,1675,200,260000,dark_elixir,1123200,6
+0,Unicorn,250,-64,True,1725,200,270000,dark_elixir,1209600,7
+0,Unicorn,250,-66,True,1800,200,280000,dark_elixir,1296000,8
+0,Unicorn,250,-68,True,1875,200,290000,dark_elixir,1382400,9
+0,Unicorn,250,-70,True,1950,200,290000,dark_elixir,1382400,10
+0,Frosty,350,94,True,2350,300,215000,dark_elixir,518400,1
+0,Frosty,350,98,True,2450,300,225000,dark_elixir,691200,2
+0,Frosty,350,102,True,2550,300,235000,dark_elixir,864000,3
+0,Frosty,350,106,True,2650,300,245000,dark_elixir,950400,4
+0,Frosty,350,110,True,2800,300,255000,dark_elixir,1036800,5
+0,Frosty,350,114,True,2900,300,265000,dark_elixir,1123200,6
+0,Frosty,350,118,True,3000,300,275000,dark_elixir,1209600,7
+0,Frosty,350,122,True,3100,300,285000,dark_elixir,1296000,8
+0,Frosty,350,126,True,3200,300,295000,dark_elixir,1382400,9
+0,Frosty,350,130,True,3300,300,295000,dark_elixir,1382400,10
+0,Diggy,80,105,True,3650,400,220000,dark_elixir,518400,1
+0,Diggy,80,110,True,3800,400,230000,dark_elixir,691200,2
+0,Diggy,80,115,True,3950,400,240000,dark_elixir,864000,3
+0,Diggy,80,120,True,4100,400,250000,dark_elixir,950400,4
+0,Diggy,80,125,True,4250,400,260000,dark_elixir,1036800,5
+0,Diggy,80,130,True,4400,400,270000,dark_elixir,1123200,6
+0,Diggy,80,135,True,4550,400,280000,dark_elixir,1209600,7
+0,Diggy,80,140,True,4700,400,290000,dark_elixir,1296000,8
+0,Diggy,80,145,True,4850,400,300000,dark_elixir,1382400,9
+0,Diggy,80,150,True,5000,400,300000,dark_elixir,1382400,10
+0,Poison Lizard,350,181,True,1250,450,225000,dark_elixir,518400,1
+0,Poison Lizard,350,192,True,1300,450,235000,dark_elixir,691200,2
+0,Poison Lizard,350,203,True,1350,450,245000,dark_elixir,864000,3
+0,Poison Lizard,350,214,True,1400,450,255000,dark_elixir,950400,4
+0,Poison Lizard,350,225,True,1450,450,265000,dark_elixir,1036800,5
+0,Poison Lizard,350,236,True,1500,450,275000,dark_elixir,1123200,6
+0,Poison Lizard,350,247,True,1550,450,285000,dark_elixir,1209600,7
+0,Poison Lizard,350,258,True,1600,450,295000,dark_elixir,1296000,8
+0,Poison Lizard,350,269,True,1650,450,305000,dark_elixir,1382400,9
+0,Poison Lizard,350,280,True,1700,450,305000,dark_elixir,1382400,10
+0,Phoenix,200,,True,8000,300,200000,dark_elixir,7200,
+0,Phoenix,200,,True,8100,300,200000,dark_elixir,7200,
+0,Phoenix,200,,True,8200,300,200000,dark_elixir,7200,
+0,Phoenix,200,,True,8300,300,200000,dark_elixir,7200,
+0,Phoenix,200,,True,8400,300,200000,dark_elixir,7200,
+0,Phoenix,200,,True,8500,300,200000,dark_elixir,7200,
+0,Phoenix,200,,True,8600,300,200000,dark_elixir,7200,
+0,Phoenix,200,,True,8700,300,200000,dark_elixir,7200,
+0,Phoenix,200,,True,8800,300,200000,dark_elixir,7200,
+0,Phoenix,200,,True,8900,300,200000,dark_elixir,7200,

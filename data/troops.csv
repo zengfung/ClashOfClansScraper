@@ -1,0 +1,230 @@
+id,name,range,dps,ground_target,hitpoints,speed,upgrade_cost,upgrade_resource,upgrade_time,training_time,is_elixir_troop,is_dark_troop,is_siege_machine,is_super_troop,cooldown,duration,min_original_level,original_troop_id,level
+4000000,Barbarian,40,8,True,45,200,20000,elixir,14400,5,True,False,False,False,,,,,1
+4000000,Barbarian,40,11,True,54,200,60000,elixir,36000,5,True,False,False,False,,,,,2
+4000000,Barbarian,40,14,True,65,200,200000,elixir,86400,5,True,False,False,False,,,,,3
+4000000,Barbarian,40,18,True,85,200,650000,elixir,172800,5,True,False,False,False,,,,,4
+4000000,Barbarian,40,23,True,105,200,1400000,elixir,259200,5,True,False,False,False,,,,,5
+4000000,Barbarian,40,26,True,125,200,2100000,elixir,432000,5,True,False,False,False,,,,,6
+4000000,Barbarian,40,30,True,160,200,2800000,elixir,518400,5,True,False,False,False,,,,,7
+4000000,Barbarian,40,34,True,205,200,5600000,elixir,1209600,5,True,False,False,False,,,,,8
+4000000,Barbarian,40,38,True,230,200,14000000,elixir,2246400,5,True,False,False,False,,,,,9
+4000000,Barbarian,40,42,True,250,200,16000000,elixir,2419200,5,True,False,False,False,,,,,10
+4000000,Barbarian,40,45,True,270,200,16000000,elixir,2419200,5,True,False,False,False,,,,,11
+4000001,Archer,350,7,True,20,300,30000,elixir,21600,6,True,False,False,False,,,,,1
+4000001,Archer,350,9,True,23,300,80000,elixir,43200,6,True,False,False,False,,,,,2
+4000001,Archer,350,12,True,28,300,300000,elixir,86400,6,True,False,False,False,,,,,3
+4000001,Archer,350,16,True,33,300,800000,elixir,172800,6,True,False,False,False,,,,,4
+4000001,Archer,350,20,True,40,300,2000000,elixir,259200,6,True,False,False,False,,,,,5
+4000001,Archer,350,22,True,44,300,2500000,elixir,432000,6,True,False,False,False,,,,,6
+4000001,Archer,350,25,True,48,300,3200000,elixir,604800,6,True,False,False,False,,,,,7
+4000001,Archer,350,28,True,52,300,6300000,elixir,1209600,6,True,False,False,False,,,,,8
+4000001,Archer,350,31,True,56,300,14500000,elixir,2246400,6,True,False,False,False,,,,,9
+4000001,Archer,350,34,True,60,300,16000000,elixir,2419200,6,True,False,False,False,,,,,10
+4000001,Archer,350,37,True,64,300,16000000,elixir,2419200,6,True,False,False,False,,,,,11
+4000003,Giant,100,11,True,300,150,40000,elixir,28800,30,True,False,False,False,,,,,1
+4000003,Giant,100,14,True,360,150,150000,elixir,57600,30,True,False,False,False,,,,,2
+4000003,Giant,100,19,True,450,150,500000,elixir,86400,30,True,False,False,False,,,,,3
+4000003,Giant,100,24,True,600,150,1200000,elixir,172800,30,True,False,False,False,,,,,4
+4000003,Giant,100,31,True,800,150,2000000,elixir,345600,30,True,False,False,False,,,,,5
+4000003,Giant,100,43,True,1100,150,3000000,elixir,604800,30,True,False,False,False,,,,,6
+4000003,Giant,100,55,True,1300,150,3500000,elixir,950400,30,True,False,False,False,,,,,7
+4000003,Giant,100,62,True,1500,150,6300000,elixir,1555200,30,True,False,False,False,,,,,8
+4000003,Giant,100,70,True,1850,150,10000000,elixir,1944000,30,True,False,False,False,,,,,9
+4000003,Giant,100,78,True,2000,150,16500000,elixir,2764800,30,True,False,False,False,,,,,10
+4000003,Giant,100,86,True,2200,150,16500000,elixir,2764800,30,True,False,False,False,,,,,11
+4000002,Goblin,40,11,True,25,400,45000,elixir,36000,7,True,False,False,False,,,,,1
+4000002,Goblin,40,14,True,30,400,175000,elixir,64800,7,True,False,False,False,,,,,2
+4000002,Goblin,40,19,True,36,400,500000,elixir,86400,7,True,False,False,False,,,,,3
+4000002,Goblin,40,24,True,50,400,1200000,elixir,172800,7,True,False,False,False,,,,,4
+4000002,Goblin,40,32,True,65,400,2000000,elixir,259200,7,True,False,False,False,,,,,5
+4000002,Goblin,40,42,True,80,400,3000000,elixir,604800,7,True,False,False,False,,,,,6
+4000002,Goblin,40,52,True,105,400,6300000,elixir,1382400,7,True,False,False,False,,,,,7
+4000002,Goblin,40,62,True,126,400,6300000,elixir,1382400,7,True,False,False,False,,,,,8
+4000004,Wall Breaker,50,6,True,20,300,100000,elixir,43200,15,True,False,False,False,,,,,1
+4000004,Wall Breaker,50,10,True,24,300,250000,elixir,86400,15,True,False,False,False,,,,,2
+4000004,Wall Breaker,50,15,True,29,300,600000,elixir,129600,15,True,False,False,False,,,,,3
+4000004,Wall Breaker,50,20,True,35,300,1200000,elixir,172800,15,True,False,False,False,,,,,4
+4000004,Wall Breaker,50,43,True,53,300,2500000,elixir,367200,15,True,False,False,False,,,,,5
+4000004,Wall Breaker,50,55,True,72,300,4200000,elixir,604800,15,True,False,False,False,,,,,6
+4000004,Wall Breaker,50,66,True,82,300,7300000,elixir,1209600,15,True,False,False,False,,,,,7
+4000004,Wall Breaker,50,75,True,92,300,10000000,elixir,1900800,15,True,False,False,False,,,,,8
+4000004,Wall Breaker,50,86,True,112,300,15200000,elixir,2592000,15,True,False,False,False,,,,,9
+4000004,Wall Breaker,50,94,True,130,300,16500000,elixir,2764800,15,True,False,False,False,,,,,10
+4000004,Wall Breaker,50,102,True,140,300,16500000,elixir,2764800,15,True,False,False,False,,,,,11
+4000005,Balloon,,25,True,150,130,125000,elixir,57600,30,True,False,False,False,,,,,1
+4000005,Balloon,,32,True,180,130,400000,elixir,86400,30,True,False,False,False,,,,,2
+4000005,Balloon,,48,True,216,130,800000,elixir,129600,30,True,False,False,False,,,,,3
+4000005,Balloon,,72,True,280,130,1500000,elixir,172800,30,True,False,False,False,,,,,4
+4000005,Balloon,,108,True,390,130,2750000,elixir,604800,30,True,False,False,False,,,,,5
+4000005,Balloon,,162,True,545,130,4500000,elixir,907200,30,True,False,False,False,,,,,6
+4000005,Balloon,,198,True,690,130,7700000,elixir,1641600,30,True,False,False,False,,,,,7
+4000005,Balloon,,236,True,840,130,10500000,elixir,2073600,30,True,False,False,False,,,,,8
+4000005,Balloon,,256,True,940,130,17000000,elixir,2937600,30,True,False,False,False,,,,,9
+4000005,Balloon,,276,True,1040,130,17000000,elixir,2937600,30,True,False,False,False,,,,,10
+4000006,Wizard,300,50,True,75,200,120000,elixir,57600,30,True,False,False,False,,,,,1
+4000006,Wizard,300,70,True,90,200,320000,elixir,86400,30,True,False,False,False,,,,,2
+4000006,Wizard,300,90,True,108,200,620000,elixir,129600,30,True,False,False,False,,,,,3
+4000006,Wizard,300,125,True,135,200,1200000,elixir,172800,30,True,False,False,False,,,,,4
+4000006,Wizard,300,170,True,165,200,2200000,elixir,345600,30,True,False,False,False,,,,,5
+4000006,Wizard,300,185,True,180,200,3500000,elixir,604800,30,True,False,False,False,,,,,6
+4000006,Wizard,300,200,True,195,200,5000000,elixir,907200,30,True,False,False,False,,,,,7
+4000006,Wizard,300,215,True,210,200,6500000,elixir,1512000,30,True,False,False,False,,,,,8
+4000006,Wizard,300,230,True,230,200,10500000,elixir,1900800,30,True,False,False,False,,,,,9
+4000006,Wizard,300,245,True,250,200,17200000,elixir,2764800,30,True,False,False,False,,,,,10
+4000006,Wizard,300,260,True,270,200,17200000,elixir,2764800,30,True,False,False,False,,,,,11
+4000007,Healer,450,-36,True,500,200,450000,elixir,86400,120,True,False,False,False,,,,,1
+4000007,Healer,450,-48,True,700,200,900000,elixir,172800,120,True,False,False,False,,,,,2
+4000007,Healer,450,-60,True,900,200,2700000,elixir,345600,120,True,False,False,False,,,,,3
+4000007,Healer,450,-66,True,1200,200,4200000,elixir,1209600,120,True,False,False,False,,,,,4
+4000007,Healer,450,-72,True,1500,200,9800000,elixir,1814400,120,True,False,False,False,,,,,5
+4000007,Healer,450,-72,True,1600,200,16000000,elixir,2764800,120,True,False,False,False,,,,,6
+4000007,Healer,450,-72,True,1700,200,16000000,elixir,2764800,120,True,False,False,False,,,,,7
+4000008,Dragon,250,140,True,1900,200,1000000,elixir,129600,180,True,False,False,False,,,,,1
+4000008,Dragon,250,160,True,2100,200,2000000,elixir,259200,180,True,False,False,False,,,,,2
+4000008,Dragon,250,180,True,2300,200,3000000,elixir,518400,180,True,False,False,False,,,,,3
+4000008,Dragon,250,210,True,2700,200,3800000,elixir,907200,180,True,False,False,False,,,,,4
+4000008,Dragon,250,240,True,3100,200,4900000,elixir,950400,180,True,False,False,False,,,,,5
+4000008,Dragon,250,270,True,3400,200,7000000,elixir,1728000,180,True,False,False,False,,,,,6
+4000008,Dragon,250,310,True,3900,200,11000000,elixir,2073600,180,True,False,False,False,,,,,7
+4000008,Dragon,250,330,True,4200,200,17500000,elixir,2937600,180,True,False,False,False,,,,,8
+4000008,Dragon,250,350,True,4500,200,17500000,elixir,2937600,180,True,False,False,False,,,,,9
+4000009,P.E.K.K.A,80,260,True,3000,200,1200000,elixir,86400,180,True,False,False,False,,,,,1
+4000009,P.E.K.K.A,80,290,True,3500,200,1800000,elixir,172800,180,True,False,False,False,,,,,2
+4000009,P.E.K.K.A,80,320,True,4000,200,2800000,elixir,345600,180,True,False,False,False,,,,,3
+4000009,P.E.K.K.A,80,360,True,4500,200,3200000,elixir,604800,180,True,False,False,False,,,,,4
+4000009,P.E.K.K.A,80,410,True,5000,200,4200000,elixir,820800,180,True,False,False,False,,,,,5
+4000009,P.E.K.K.A,80,470,True,5500,200,5200000,elixir,1036800,180,True,False,False,False,,,,,6
+4000009,P.E.K.K.A,80,540,True,5900,200,7700000,elixir,1728000,180,True,False,False,False,,,,,7
+4000009,P.E.K.K.A,80,610,True,6300,200,10500000,elixir,1944000,180,True,False,False,False,,,,,8
+4000009,P.E.K.K.A,80,680,True,6700,200,10500000,elixir,1944000,180,True,False,False,False,,,,,9
+4000023,Baby Dragon,225,75,True,1200,250,2000000,elixir,345600,90,True,False,False,False,,,,,1
+4000023,Baby Dragon,225,85,True,1300,250,2500000,elixir,604800,90,True,False,False,False,,,,,2
+4000023,Baby Dragon,225,95,True,1400,250,3400000,elixir,864000,90,True,False,False,False,,,,,3
+4000023,Baby Dragon,225,105,True,1500,250,4200000,elixir,1080000,90,True,False,False,False,,,,,4
+4000023,Baby Dragon,225,115,True,1600,250,6300000,elixir,1425600,90,True,False,False,False,,,,,5
+4000023,Baby Dragon,225,125,True,1700,250,9000000,elixir,1814400,90,True,False,False,False,,,,,6
+4000023,Baby Dragon,225,135,True,1800,250,16000000,elixir,2721600,90,True,False,False,False,,,,,7
+4000023,Baby Dragon,225,145,True,1900,250,16000000,elixir,2721600,90,True,False,False,False,,,,,8
+4000024,Miner,60,80,True,550,400,2500000,elixir,374400,30,True,False,False,False,,,,,1
+4000024,Miner,60,88,True,610,400,3200000,elixir,604800,30,True,False,False,False,,,,,2
+4000024,Miner,60,96,True,670,400,3800000,elixir,691200,30,True,False,False,False,,,,,3
+4000024,Miner,60,104,True,730,400,5000000,elixir,1209600,30,True,False,False,False,,,,,4
+4000024,Miner,60,112,True,800,400,6500000,elixir,1555200,30,True,False,False,False,,,,,5
+4000024,Miner,60,120,True,900,400,10000000,elixir,2030400,30,True,False,False,False,,,,,6
+4000024,Miner,60,128,True,1000,400,16500000,elixir,2764800,30,True,False,False,False,,,,,7
+4000024,Miner,60,136,True,1100,400,18500000,elixir,2937600,30,True,False,False,False,,,,,8
+4000024,Miner,60,144,True,1200,400,18500000,elixir,2937600,30,True,False,False,False,,,,,9
+4000059,Electro Dragon,250,240,True,3200,160,6300000,elixir,950400,360,True,False,False,False,,,,,1
+4000059,Electro Dragon,250,270,True,3700,160,7700000,elixir,1684800,360,True,False,False,False,,,,,2
+4000059,Electro Dragon,250,300,True,4200,160,12000000,elixir,2073600,360,True,False,False,False,,,,,3
+4000059,Electro Dragon,250,330,True,4500,160,18000000,elixir,2937600,360,True,False,False,False,,,,,4
+4000059,Electro Dragon,250,360,True,4800,160,20000000,elixir,3110400,360,True,False,False,False,,,,,5
+4000059,Electro Dragon,250,390,True,5100,160,20000000,elixir,3110400,360,True,False,False,False,,,,,6
+4000053,Yeti,80,230,True,2900,150,7700000,elixir,1296000,180,True,False,False,False,,,,,1
+4000053,Yeti,80,250,True,3200,150,11200000,elixir,2073600,180,True,False,False,False,,,,,2
+4000053,Yeti,80,270,True,3500,150,17100000,elixir,2937600,180,True,False,False,False,,,,,3
+4000053,Yeti,80,290,True,3700,150,17100000,elixir,2937600,180,True,False,False,False,,,,,4
+4000065,Dragon Rider,350,340,True,4100,250,12000000,elixir,1944000,250,True,False,False,False,,,,,1
+4000065,Dragon Rider,350,370,True,4400,250,16500000,elixir,2764800,250,True,False,False,False,,,,,2
+4000065,Dragon Rider,350,400,True,4700,250,16500000,elixir,2764800,250,True,False,False,False,,,,,3
+4000010,Minion,225,38,True,58,400,3000,dark_elixir,57600,18,False,True,False,False,,,,,1
+4000010,Minion,225,41,True,63,400,7000,dark_elixir,115200,18,False,True,False,False,,,,,2
+4000010,Minion,225,44,True,68,400,15000,dark_elixir,172800,18,False,True,False,False,,,,,3
+4000010,Minion,225,47,True,73,400,25000,dark_elixir,345600,18,False,True,False,False,,,,,4
+4000010,Minion,225,50,True,78,400,35000,dark_elixir,604800,18,False,True,False,False,,,,,5
+4000010,Minion,225,54,True,84,400,63000,dark_elixir,864000,18,False,True,False,False,,,,,6
+4000010,Minion,225,58,True,90,400,105000,dark_elixir,1684800,18,False,True,False,False,,,,,7
+4000010,Minion,225,62,True,96,400,188000,dark_elixir,1987200,18,False,True,False,False,,,,,8
+4000010,Minion,225,66,True,102,400,285000,dark_elixir,2678400,18,False,True,False,False,,,,,9
+4000010,Minion,225,70,True,108,400,310000,dark_elixir,2851200,18,False,True,False,False,,,,,10
+4000010,Minion,225,74,True,114,400,310000,dark_elixir,2851200,18,False,True,False,False,,,,,11
+4000011,Hog Rider,60,60,True,270,300,5000,dark_elixir,72000,45,False,True,False,False,,,,,1
+4000011,Hog Rider,60,70,True,312,300,9000,dark_elixir,144000,45,False,True,False,False,,,,,2
+4000011,Hog Rider,60,80,True,370,300,16000,dark_elixir,216000,45,False,True,False,False,,,,,3
+4000011,Hog Rider,60,92,True,430,300,30000,dark_elixir,345600,45,False,True,False,False,,,,,4
+4000011,Hog Rider,60,105,True,500,300,43000,dark_elixir,604800,45,False,True,False,False,,,,,5
+4000011,Hog Rider,60,118,True,590,300,70000,dark_elixir,907200,45,False,True,False,False,,,,,6
+4000011,Hog Rider,60,135,True,700,300,105000,dark_elixir,1382400,45,False,True,False,False,,,,,7
+4000011,Hog Rider,60,148,True,810,300,168000,dark_elixir,1684800,45,False,True,False,False,,,,,8
+4000011,Hog Rider,60,161,True,890,300,210000,dark_elixir,2073600,45,False,True,False,False,,,,,9
+4000011,Hog Rider,60,174,True,970,300,305000,dark_elixir,2808000,45,False,True,False,False,,,,,10
+4000011,Hog Rider,60,187,True,1080,300,305000,dark_elixir,2808000,45,False,True,False,False,,,,,11
+4000012,Valkyrie,50,94,True,750,300,8000,dark_elixir,172800,90,False,True,False,False,,,,,1
+4000012,Valkyrie,50,106,True,850,300,12000,dark_elixir,345600,90,False,True,False,False,,,,,2
+4000012,Valkyrie,50,119,True,950,300,25000,dark_elixir,518400,90,False,True,False,False,,,,,3
+4000012,Valkyrie,50,133,True,1050,300,38000,dark_elixir,734400,90,False,True,False,False,,,,,4
+4000012,Valkyrie,50,148,True,1300,300,63000,dark_elixir,907200,90,False,True,False,False,,,,,5
+4000012,Valkyrie,50,163,True,1500,300,123000,dark_elixir,1339200,90,False,True,False,False,,,,,6
+4000012,Valkyrie,50,178,True,1650,300,195000,dark_elixir,2073600,90,False,True,False,False,,,,,7
+4000012,Valkyrie,50,193,True,1800,300,295000,dark_elixir,2808000,90,False,True,False,False,,,,,8
+4000012,Valkyrie,50,208,True,2000,300,295000,dark_elixir,2808000,90,False,True,False,False,,,,,9
+4000013,Golem,100,35,True,5100,150,10000,dark_elixir,216000,300,False,True,False,False,,,,,1
+4000013,Golem,100,40,True,5400,150,20000,dark_elixir,432000,300,False,True,False,False,,,,,2
+4000013,Golem,100,45,True,5700,150,30000,dark_elixir,648000,300,False,True,False,False,,,,,3
+4000013,Golem,100,50,True,6000,150,43000,dark_elixir,734400,300,False,True,False,False,,,,,4
+4000013,Golem,100,55,True,6300,150,53000,dark_elixir,864000,300,False,True,False,False,,,,,5
+4000013,Golem,100,60,True,6600,150,77000,dark_elixir,950400,300,False,True,False,False,,,,,6
+4000013,Golem,100,65,True,6900,150,112000,dark_elixir,1252800,300,False,True,False,False,,,,,7
+4000013,Golem,100,70,True,7200,150,140000,dark_elixir,1684800,300,False,True,False,False,,,,,8
+4000013,Golem,100,75,True,7500,150,200000,dark_elixir,2073600,300,False,True,False,False,,,,,9
+4000013,Golem,100,80,True,8000,150,300000,dark_elixir,2764800,300,False,True,False,False,,,,,10
+4000013,Golem,100,85,True,8400,150,330000,dark_elixir,2937600,300,False,True,False,False,,,,,11
+4000013,Golem,100,90,True,8800,150,330000,dark_elixir,2937600,300,False,True,False,False,,,,,12
+4000015,Witch,400,100,True,300,150,50000,dark_elixir,691200,120,False,True,False,False,,,,,1
+4000015,Witch,400,110,True,320,150,68000,dark_elixir,820800,120,False,True,False,False,,,,,2
+4000015,Witch,400,140,True,400,150,90000,dark_elixir,1166400,120,False,True,False,False,,,,,3
+4000015,Witch,400,160,True,440,150,140000,dark_elixir,1728000,120,False,True,False,False,,,,,4
+4000015,Witch,400,180,True,480,150,340000,dark_elixir,3024000,120,False,True,False,False,,,,,5
+4000015,Witch,400,200,True,520,150,340000,dark_elixir,3024000,120,False,True,False,False,,,,,6
+4000017,Lava Hound,25,10,True,6100,250,35000,dark_elixir,432000,300,False,True,False,False,,,,,1
+4000017,Lava Hound,25,12,True,6500,250,50000,dark_elixir,734400,300,False,True,False,False,,,,,2
+4000017,Lava Hound,25,14,True,6800,250,85000,dark_elixir,1080000,300,False,True,False,False,,,,,3
+4000017,Lava Hound,25,16,True,7200,250,135000,dark_elixir,1728000,300,False,True,False,False,,,,,4
+4000017,Lava Hound,25,18,True,7600,250,200000,dark_elixir,2073600,300,False,True,False,False,,,,,5
+4000017,Lava Hound,25,20,True,8000,250,200000,dark_elixir,2073600,300,False,True,False,False,,,,,6
+4000022,Bowler,300,60,True,325,175,65000,dark_elixir,604800,60,False,True,False,False,,,,,1
+4000022,Bowler,300,70,True,350,175,88000,dark_elixir,864000,60,False,True,False,False,,,,,2
+4000022,Bowler,300,80,True,385,175,140000,dark_elixir,1468800,60,False,True,False,False,,,,,3
+4000022,Bowler,300,90,True,420,175,210000,dark_elixir,1900800,60,False,True,False,False,,,,,4
+4000022,Bowler,300,96,True,455,175,305000,dark_elixir,2894400,60,False,True,False,False,,,,,5
+4000022,Bowler,300,102,True,500,175,305000,dark_elixir,2894400,60,False,True,False,False,,,,,6
+4000058,Ice Golem,100,24,True,2600,150,55000,dark_elixir,489600,150,False,True,False,False,,,,,1
+4000058,Ice Golem,100,28,True,2800,150,85000,dark_elixir,864000,150,False,True,False,False,,,,,2
+4000058,Ice Golem,100,32,True,3000,150,110000,dark_elixir,1252800,150,False,True,False,False,,,,,3
+4000058,Ice Golem,100,36,True,3200,150,140000,dark_elixir,1641600,150,False,True,False,False,,,,,4
+4000058,Ice Golem,100,40,True,3400,150,305000,dark_elixir,2764800,150,False,True,False,False,,,,,5
+4000058,Ice Golem,100,44,True,3600,150,305000,dark_elixir,2764800,150,False,True,False,False,,,,,6
+4000082,Headhunter,300,105,True,360,300,125000,dark_elixir,1684800,60,False,True,False,False,,,,,1
+4000082,Headhunter,300,115,True,400,300,180000,dark_elixir,2073600,60,False,True,False,False,,,,,2
+4000082,Headhunter,300,125,True,440,300,180000,dark_elixir,2073600,60,False,True,False,False,,,,,3
+4000095,Electro Titan,125,180,True,7200,200,19500000,elixir,3024000,360,True,False,False,False,,,,,1
+4000095,Electro Titan,125,200,True,7700,200,20500000,elixir,3110400,360,True,False,False,False,,,,,2
+4000095,Electro Titan,125,220,True,8200,200,20500000,elixir,3110400,360,True,False,False,False,,,,,3
+4000051,Wall Wrecker,150,250,True,5500,150,4200000,elixir,950400,1200,False,False,True,False,,,,,1
+4000051,Wall Wrecker,150,300,True,6000,150,5600000,elixir,1209600,1200,False,False,True,False,,,,,2
+4000051,Wall Wrecker,150,350,True,6500,150,10500000,elixir,2073600,1200,False,False,True,False,,,,,3
+4000051,Wall Wrecker,150,400,True,7000,150,10500000,elixir,2073600,1200,False,False,True,False,,,,,4
+4000052,Battle Blimp,150,100,True,3000,225,4200000,elixir,950400,1200,False,False,True,False,,,,,1
+4000052,Battle Blimp,150,140,True,3500,225,5600000,elixir,1209600,1200,False,False,True,False,,,,,2
+4000052,Battle Blimp,150,180,True,4000,225,10500000,elixir,2073600,1200,False,False,True,False,,,,,3
+4000052,Battle Blimp,150,220,True,4500,225,10500000,elixir,2073600,1200,False,False,True,False,,,,,4
+4000062,Stone Slammer,,400,True,5600,200,4200000,elixir,950400,1200,False,False,True,False,,,,,1
+4000062,Stone Slammer,,500,True,5900,200,5600000,elixir,1209600,1200,False,False,True,False,,,,,2
+4000062,Stone Slammer,,600,True,6200,200,10500000,elixir,2073600,1200,False,False,True,False,,,,,3
+4000062,Stone Slammer,,700,True,6500,200,10500000,elixir,2073600,1200,False,False,True,False,,,,,4
+4000075,Siege Barracks,,,True,3300,,5600000,elixir,1209600,1200,False,False,True,False,,,,,
+4000075,Siege Barracks,,,True,3700,,7700000,elixir,1684800,1200,False,False,True,False,,,,,
+4000075,Siege Barracks,,,True,4100,,10500000,elixir,2073600,1200,False,False,True,False,,,,,
+4000075,Siege Barracks,,,True,4500,,10500000,elixir,2073600,1200,False,False,True,False,,,,,
+4000087,Log Launcher,100,140,True,4000,70,6000000,elixir,1296000,1200,False,False,True,False,,,,,1
+4000087,Log Launcher,100,160,True,4400,70,8200000,elixir,1814400,1200,False,False,True,False,,,,,2
+4000087,Log Launcher,100,180,True,4800,70,10500000,elixir,2073600,1200,False,False,True,False,,,,,3
+4000087,Log Launcher,100,200,True,5200,70,10500000,elixir,2073600,1200,False,False,True,False,,,,,4
+4000091,Flame Flinger,1000,45,True,1700,80,7600000,elixir,1641600,1200,False,False,True,False,,,,,1
+4000091,Flame Flinger,1000,50,True,1800,80,10500000,elixir,2332800,1200,False,False,True,False,,,,,2
+4000091,Flame Flinger,1000,55,True,1900,80,13300000,elixir,2592000,1200,False,False,True,False,,,,,3
+4000091,Flame Flinger,1000,60,True,2000,80,13300000,elixir,2592000,1200,False,False,True,False,,,,,4
+4000092,Battle Drill,100,430,True,4600,300,8000000,elixir,1728000,1200,False,False,True,False,,,,,1
+4000092,Battle Drill,100,470,True,4900,300,11000000,elixir,2419200,1200,False,False,True,False,,,,,2
+4000092,Battle Drill,100,510,True,5200,300,14000000,elixir,2764800,1200,False,False,True,False,,,,,3
+4000092,Battle Drill,100,550,True,5500,300,14000000,elixir,2764800,1200,False,False,True,False,,,,,4

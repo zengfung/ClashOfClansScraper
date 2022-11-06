@@ -120,7 +120,7 @@ def get_all_data(client:coc.Client, setup:AttackItemSetup) -> pd.DataFrame:
         result = setup.func(client, item)
         results.append(result)
     
-    LOGGER.debug(f'Concatenating all heroes data into 1 dataframe.')
+    LOGGER.debug(f'Concatenating all data into 1 dataframe.')
     return pd.concat(results, ignore_index=True)
 
 # =========
@@ -211,6 +211,32 @@ def create_troop_dataframe(info:coc) -> pd.DataFrame:
         'duration': scraper.common.convert_time_to_seconds(info.duration) * df_len if hasattr(info, 'duration') else np.nan,
         'min_original_level': info.min_original_level if hasattr(info, 'min_original_level') else np.nan,
         'original_troop_id': info.original_troop.id if hasattr(info, 'original_troop') else np.nan,
+        'level': info.level
+    })
+    return df
+
+# ========
+# SPELL DATA
+# ========
+def get_spell_data(client:coc.Client, name:str) -> pd.DataFrame:
+    LOGGER.debug(f'Getting {name} Spell uninitialized object.')
+    spell = client.get_spell(name)
+    return create_spell_dataframe(spell)
+
+def create_spell_dataframe(info:coc) -> pd.DataFrame:
+    LOGGER.debug(f'Creating {info.name} data frame.')
+
+    df = pd.DataFrame({
+        'id': info.id,
+        'name': info.name,
+        'range': info.range,
+        'dps': info.dps,
+        'upgrade_cost': info.upgrade_cost,
+        'upgrade_resource': info.upgrade_resource.name,
+        'upgrade_time': scraper.common.convert_time_to_seconds(info.upgrade_time) if len(info.upgrade_time) > 0 else np.nan,
+        'training_time': info.training_time,
+        'is_elixir_spell': info.is_elixir_spell,
+        'is_dark_spell': info.is_dark_spell,
         'level': info.level
     })
     return df
