@@ -8,10 +8,10 @@ from pathlib import Path
 
 LOGGER = logging.getLogger(__name__)
 
-HEROES_FILENAME = "heroes.csv"
-PETS_FILENAME = "pets.csv"
-TROOPS_FILENAME = "troops.csv"
-SPELLS_FILENAME = "spells.csv"
+HEROES_FILENAME = "heroes_info.csv"
+PETS_FILENAME = "pets_info.csv"
+TROOPS_FILENAME = "troops_info.csv"
+SPELLS_FILENAME = "spells_info.csv"
 
 class AttackItemSetup:
     def __init__(self, item_type:str) -> None:

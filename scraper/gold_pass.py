@@ -16,7 +16,7 @@ async def update_goldpass_season_table(client:coc.Client, dir:str) -> None:
     df = create_goldpass_dataframe(season_id, goldpass_info)
 
     LOGGER.debug(f'Creating or appending data to {dir}/{FILENAME} if needed.')
-    scraper.common.create_or_append_table_if_needed(df, dir, FILENAME)
+    scraper.common.create_or_append_table_if_needed(df, dir, FILENAME, ['seasonId'])
 
 def create_goldpass_dataframe(season_id:str, info:coc) -> pd.DataFrame:
     LOGGER.debug(f'Creating Gold Pass data frame with 1 row of data.')
