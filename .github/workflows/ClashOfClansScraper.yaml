@@ -1,0 +1,32 @@
+name: ClashOfClansScraper
+on:
+  schedule:
+    - cron: 0 0 * * *
+  push:
+    paths:
+    - scraper/**
+    - main.py
+  workflow_dispatch:
+jobs:
+  ClashOfClansScraper:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Activate Conda environment."
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          activate-environment: clash-of-clans
+          condarc-file: condarc.yml
+          environment-file: environment.yml
+      - run: |
+          conda info
+          conda list
+      - name: "Run Clash of Clans data scraping."
+        run: |
+          python main.py --email ${{ secrets.COC_EMAIL }} --password ${{ secrets.COC_PASSWORD}} --verbosity 2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

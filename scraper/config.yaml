@@ -1,0 +1,6 @@
+# Player data to be scraped.
+#   wantosleep: #Y9VG28UL
+#   wantosleep2: #LG8U8UC99
+#   zWyeBroken: #YG2V9YPUP
+#   zoecmy: #QPPLYYJGY
+players: ["#Y9VG28UL", "#LG8U8UC99", "#YG2V9YPUP", "#QPPLYYJGY"]
