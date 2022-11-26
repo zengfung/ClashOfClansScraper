@@ -9,3 +9,4 @@ dependencies:
     - coc-py==2.2.0
     - asyncio==3.4.3
     - pyyaml==6.0
+    - azure-data-tables==12.4.1
