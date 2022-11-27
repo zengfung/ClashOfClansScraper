@@ -9,7 +9,9 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', '--email', help="Email account to access the Clash of Clans API.", type=str, required=True)
     parser.add_argument('-p', '--password', help="Password to access the Clash of Clans API.", type=str, required=True)
-    parser.add_argument('-c', '--connection_str', help="Azure Table Storage connection string.", type=str, required=True)
+    parser.add_argument('-n', '--name', help="Azure Table Storage account name.", type=str, required=False, default=None)
+    parser.add_argument('-k', '--access_key', help="Azure Table Storage access key.", type=str, required=False, default=None)
+    parser.add_argument('-c', '--connection_string', help="Azure Table Storage connection string.", type=str, required=False, default=None)
     parser.add_argument('-o', '--output', help="Dataset output directory.", type=str, required=False, default="./data")
     parser.add_argument('-v', '--verbosity', help="Increase output verbosity.", type=int, required=False, default=0, choices=[0,1,2])
     args = parser.parse_args()
@@ -34,7 +36,7 @@ async def main():
     await client.login(args.email, args.password)
 
     logging.info("Updating Gold Pass Season Table...")
-    writer = GoldPassTableHandler(client, connection_string=args.connection_str)
+    writer = GoldPassTableHandler(client, connection_string=args.connection_string)
     await writer.process_table()
 
     # logging.info("Updating Heroes Table...")
