@@ -3,11 +3,13 @@ import asyncio
 import coc
 import logging
 from scraper import *
+from scraper.gold_pass import GoldPassTableHandler
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', '--email', help="Email account to access the Clash of Clans API.", type=str, required=True)
     parser.add_argument('-p', '--password', help="Password to access the Clash of Clans API.", type=str, required=True)
+    parser.add_argument('-c', '--connection_str', help="Azure Table Storage connection string.", type=str, required=True)
     parser.add_argument('-o', '--output', help="Dataset output directory.", type=str, required=False, default="./data")
     parser.add_argument('-v', '--verbosity', help="Increase output verbosity.", type=int, required=False, default=0, choices=[0,1,2])
     args = parser.parse_args()
@@ -32,23 +34,24 @@ async def main():
     await client.login(args.email, args.password)
 
     logging.info("Updating Gold Pass Season Table...")
-    await update_goldpass_season_table(client, args.output)
+    writer = GoldPassTableHandler(client, connection_string=args.connection_str)
+    await writer.process_table()
 
-    logging.info("Updating Heroes Table...")
-    create_dataframe_for_ingame_data(client, "hero", args.output)
+    # logging.info("Updating Heroes Table...")
+    # create_dataframe_for_ingame_data(client, "hero", args.output)
     
-    logging.info("Updating Pets Table...")
-    create_dataframe_for_ingame_data(client, "pet", args.output)
+    # logging.info("Updating Pets Table...")
+    # create_dataframe_for_ingame_data(client, "pet", args.output)
     
-    logging.info("Updating Troops Table...")
-    create_dataframe_for_ingame_data(client, "home_troop", args.output)
-    create_dataframe_for_ingame_data(client, "super_troop", args.output)
+    # logging.info("Updating Troops Table...")
+    # create_dataframe_for_ingame_data(client, "home_troop", args.output)
+    # create_dataframe_for_ingame_data(client, "super_troop", args.output)
 
-    logging.info("Updating Spells Table...")
-    create_dataframe_for_ingame_data(client, "spell", args.output)
+    # logging.info("Updating Spells Table...")
+    # create_dataframe_for_ingame_data(client, "spell", args.output)
 
-    logging.info('Updating Players Table...')
-    await update_players_table(client, args.output)
+    # logging.info('Updating Players Table...')
+    # await update_players_table(client, args.output)
 
     await client.close()
 
