@@ -4,6 +4,7 @@ import coc
 import logging
 from scraper import *
 from scraper.gold_pass import GoldPassTableHandler
+from scraper.in_game import TroopTableHandler
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -36,8 +37,12 @@ async def main():
     await client.login(args.email, args.password)
 
     logging.info("Updating Gold Pass Season Table...")
-    writer = GoldPassTableHandler(client, connection_string=args.connection_string)
+    writer = GoldPassTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
     await writer.process_table()
+
+    logging.info("Updating Troop Table...")
+    writer = TroopTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
+    writer.process_table()
 
     # logging.info("Updating Heroes Table...")
     # create_dataframe_for_ingame_data(client, "hero", args.output)

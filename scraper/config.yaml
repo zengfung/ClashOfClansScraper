@@ -1,20 +1,15 @@
 TroopSettings:
-  TableName: "troop_test"
-  Troop: ["heroes", "pets", "troops", "spells"]
+  TableName: "TroopTest"
+  Categories: ["hero", "pet", "troop"]
   ScrapeEnabled: true
-  ScrapeFrequency: "1 month"
 
 GoldPassSettings:
   TableName: "GoldPassTest"
   ScrapeEnabled: true
-  ScrapeFrequency: "1 month"
-  PartitionKey: "SeasonId"
-  RowKey: "TimeStamp"
 
 PlayerSettings:
   TableName: "player_test"
   ScrapeEnabled: true
-  ScrapeFrequency: "1 day"
   # Player data to be scraped.
   #   wantosleep: #Y9VG28UL
   #   wantosleep2: #LG8U8UC99
@@ -25,6 +20,5 @@ PlayerSettings:
 ClanSettings:
   TableName: "clan"
   ScrapeEnabled: true
-  ScrapeFrequency: "1 day"
   Clans: []
   ScrapeAllMembersEnabled: true

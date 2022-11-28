@@ -12,9 +12,6 @@ class GoldPassTableHandler(StorageHandler):
     configs = CONFIG['GoldPassSettings']
     table = configs['TableName']
     scrape_enabled = configs['ScrapeEnabled']
-    scrape_freq = configs['ScrapeFrequency']
-    partition_key = configs['PartitionKey']
-    row_key = configs['RowKey']
 
     def __init__(self, coc_client:coc.Client, **kwargs) -> None:
         super().__init__(self.table, **kwargs)
@@ -26,8 +23,8 @@ class GoldPassTableHandler(StorageHandler):
     def __convert_data_to_entity_list__(self, data):
         LOGGER.debug(f'Creating entity for Gold Pass Season.')
         entity = dict()
-        entity['PartitionKey'] = self.partition_key
-        entity['RowKey'] = self.row_key
+        entity['PartitionKey'] = datetime.datetime.now().strftime('%Y')
+        entity['RowKey'] = datetime.datetime.now().strftime('%m')
         entity['SeasonId'] = datetime.datetime.now().strftime('%Y-%m')
         entity['StartTime'] = data.start_time.time
         entity['EndTime'] = data.end_time.time

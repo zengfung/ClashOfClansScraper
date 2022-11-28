@@ -24,10 +24,19 @@ class StorageHandler(object):
 
         LOGGER.debug(f'Connecting to table service client.')
         if (connection_string is not None):
-            return TableServiceClient.from_connection_string(conn_str=connection_string)
-        elif (account_name is not None and access_key is not None):
-            credential = AzureNamedKeyCredential(account_name, access_key)
-            return TableServiceClient(endpoint=f'https://{account_name}.table.core.windows.net/', credential=credential)
+            try:
+                LOGGER.debug('Attempting connection via connection string.')
+                return TableServiceClient.from_connection_string(conn_str=connection_string)
+            except:
+                LOGGER.debug('Connection attempt via connection string failed.')
+        
+        if (account_name is not None and access_key is not None):
+            try:
+                LOGGER.debug('Attempting connection via account name and access key.')
+                credential = AzureNamedKeyCredential(account_name, access_key)
+                return TableServiceClient(endpoint=f'https://{account_name}.table.core.windows.net/', credential=credential)
+            except:
+                LOGGER.debug('Connection attempt via account name and access key failed.')
 
     def __connect_table_client__(self, name:str) -> None:
         LOGGER.debug(f'Connecting to table client {name}')
