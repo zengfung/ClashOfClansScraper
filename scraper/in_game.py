@@ -64,7 +64,7 @@ class TroopTableHandler(StorageHandler):
                 LOGGER.error(f'No available list for item type {category}!')
 
     def __get_entity_count__(self, data):
-        return len(data.level)
+        return len(data.dps)
 
     def __convert_data_to_entity_list__(self, data):
         LOGGER.debug(f'Creating entity for {data.name}.')
@@ -83,7 +83,7 @@ class TroopTableHandler(StorageHandler):
         for item in items:
             LOGGER.debug(f'Scraping {item} data from {category} category.')
             data = func(item)
-            return self.__convert_data_to_entity_list__(data)
+            yield from self.__convert_data_to_entity_list__(data)
 
     def __get_function__(self, category:str):
         match category:
