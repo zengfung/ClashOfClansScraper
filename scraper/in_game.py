@@ -64,18 +64,33 @@ class TroopTableHandler(StorageHandler):
                 LOGGER.error(f'No available list for item type {category}!')
 
     def __get_entity_count__(self, data):
-        return len(data.dps)
+        attrs = dir(data)
+        count = 0
+        for attr in attrs:
+            a = getattr(data, attr)
+            if isinstance(a, list):
+                count = max(count, len(a))
+        return count
+
+    def __try_get_attr__(self, data, attr, index=None):
+        out = getattr(data, attr, None)
+        if out is not None and index is not None:
+            try:
+                return out[index]
+            except IndexError as ex:
+                LOGGER.error(str(ex))
+        return out
 
     def __convert_data_to_entity_list__(self, data):
-        LOGGER.debug(f'Creating entity for {data.name}.')
+        LOGGER.debug(f'Creating entity for {self.__try_get_attr__(data, "name")}.')
         for i in range(self.__get_entity_count__(data)):
             entity = dict()
-            entity['PartitionKey'] = f'{data.id}_{data.level[i+1]}'
+            entity['PartitionKey'] = f'{self.__try_get_attr__(data, "id")}_{self.__try_get_attr__(data, "level", i+1)}'
             entity['RowKey'] = f'{datetime.datetime.now().strftime("%Y-%m")}'
             entity['SeasonId'] = datetime.datetime.now().strftime('%Y-%m')
-            entity['Id'] = data.id
-            entity['Name'] = data.name
-            entity['Level'] = data.level[i+1]
+            entity['Id'] = self.__try_get_attr__(data, "id")
+            entity['Name'] = self.__try_get_attr__(data, "name")
+            entity['Level'] = self.__try_get_attr__(data, "level", i+1)
             yield entity
 
     def __get_item_data__(self, func, category:str):
@@ -116,9 +131,9 @@ class TroopTableHandler(StorageHandler):
 
     def process_table(self) -> None:
         if self.scrape_enabled:
-            LOGGER.debug(f'Troop table {self.table} is updating.')
+            LOGGER.info(f'Troop table {self.table} is updating.')
             for category in self.categories:
                 LOGGER.debug(f'Updating table with {category} data.')
                 self.__update_table__(category)
         else:
-            LOGGER.debug(f'Troop table {self.table} is not updated because TroopSettings.ScrapeEnabled is {self.scrape_enabled}.')
+            LOGGER.info(f'Troop table {self.table} is not updated because TroopSettings.ScrapeEnabled is {self.scrape_enabled}.')

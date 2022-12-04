@@ -25,21 +25,21 @@ class StorageHandler(object):
         LOGGER.debug(f'Connecting to table service client.')
         if (connection_string is not None):
             try:
-                LOGGER.debug('Attempting connection via connection string.')
+                LOGGER.info('Attempting connection via connection string.')
                 return TableServiceClient.from_connection_string(conn_str=connection_string)
             except:
-                LOGGER.debug('Connection attempt via connection string failed.')
+                LOGGER.info('Connection attempt via connection string failed.')
         
         if (account_name is not None and access_key is not None):
             try:
-                LOGGER.debug('Attempting connection via account name and access key.')
+                LOGGER.info('Attempting connection via account name and access key.')
                 credential = AzureNamedKeyCredential(account_name, access_key)
                 return TableServiceClient(endpoint=f'https://{account_name}.table.core.windows.net/', credential=credential)
             except:
-                LOGGER.debug('Connection attempt via account name and access key failed.')
+                LOGGER.info('Connection attempt via account name and access key failed.')
 
     def __connect_table_client__(self, name:str) -> None:
-        LOGGER.debug(f'Connecting to table client {name}')
+        LOGGER.info(f'Connecting to table client {name}')
         return self.service_table_client.create_table_if_not_exists(table_name=name)
 
     def __write_data_to_table__(self, entities) -> None:

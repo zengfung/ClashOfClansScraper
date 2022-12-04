@@ -39,7 +39,7 @@ class GoldPassTableHandler(StorageHandler):
 
     async def process_table(self) -> None:
         if self.scrape_enabled:
-            LOGGER.debug(f'Gold Pass table {self.table} is updating.')
+            LOGGER.info(f'Gold Pass table {self.table} is updating.')
             await self.__update_table__()
         else:
-            LOGGER.debug(f'Gold Pass table {self.table} is not updated because GoldPassSettings.ScrapeEnabled is {self.scrape_enabled}.')
+            LOGGER.info(f'Gold Pass table {self.table} is not updated because GoldPassSettings.ScrapeEnabled is {self.scrape_enabled}.')
