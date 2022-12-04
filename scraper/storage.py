@@ -49,6 +49,12 @@ class StorageHandler(object):
                 self.table_client.create_entity(entity=entity)
                 LOGGER.debug('Successfully written entity to table.')
             except ResourceExistsError:
-                LOGGER.debug('Entity already exists and will not be added to table.')
-        LOGGER.debug('Successfully written all entities to table.')
+                LOGGER.warning('Entity already exists, attempting upsert of entity.')
+                try:
+                    self.table_client.upsert_entity(entity=entity)
+                    LOGGER.debug('Successfully upsert entity.')
+                except Exception as ex:
+                    LOGGER.error('Failed to upsert entity.')
+                    LOGGER.error(str(ex))
+        LOGGER.debug('Sent all entities to table.')
     

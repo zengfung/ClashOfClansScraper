@@ -19,12 +19,15 @@ def parse_args():
     return args
 
 def get_log_level(verbosity:int):
-    if verbosity == 0:
-        return logging.WARNING
-    elif verbosity == 1:
-        return logging.INFO
-    else:       # verbosity == 2
-        return logging.DEBUG
+    match verbosity:
+        case 0:
+            return logging.WARNING
+        case 1:
+            return logging.INFO
+        case 2:
+            return logging.DEBUG
+        case _:
+            return logging.WARNING
 
 async def main():
     args = parse_args()

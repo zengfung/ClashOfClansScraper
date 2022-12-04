@@ -15,6 +15,7 @@ class TroopTableHandler(StorageHandler):
     table = configs['TableName']
     categories = configs['Categories']
     scrape_enabled = configs['ScrapeEnabled']
+    null_id_scrape_enabled = configs['NullIdScrapeEnabled']
 
     def __init__(self, coc_client:coc.Client, **kwargs) -> None:
         super().__init__(self.table, **kwargs)
@@ -79,26 +80,62 @@ class TroopTableHandler(StorageHandler):
                 return out[index]
             except IndexError as ex:
                 LOGGER.error(str(ex))
+                return None
         return out
 
     def __convert_data_to_entity_list__(self, data):
         LOGGER.debug(f'Creating entity for {self.__try_get_attr__(data, "name")}.')
         for i in range(self.__get_entity_count__(data)):
             entity = dict()
+            # Mandatory keys
             entity['PartitionKey'] = f'{self.__try_get_attr__(data, "id")}_{self.__try_get_attr__(data, "level", i+1)}'
             entity['RowKey'] = f'{datetime.datetime.now().strftime("%Y-%m")}'
+
+            # Identity keys
             entity['SeasonId'] = datetime.datetime.now().strftime('%Y-%m')
             entity['Id'] = self.__try_get_attr__(data, "id")
             entity['Name'] = self.__try_get_attr__(data, "name")
+
+            # Details
+            lab_level = self.__try_get_attr__(data, "lab_level", i+1)
+            townhall_level = self.__try_get_attr__(data, "lab_to_townhall", lab_level) if lab_level is not None else None
+            entity['Range'] = self.__try_get_attr__(data, "range", i+1)
+            entity['Dps'] = self.__try_get_attr__(data, "dps", i+1)
+            entity['GroundTarget'] = self.__try_get_attr__(data, "ground_target")
+            entity['Hitpoints'] = self.__try_get_attr__(data, "hitpoints", i+1)
+            entity['HousingSpace'] = self.__try_get_attr__(data, "housing_space")
+            entity['LabLevel'] = self.__try_get_attr__(data, "lab_level", i+1)
+            entity['TownhallLevel'] = townhall_level
+            entity['Speed'] = self.__try_get_attr__(data, "speed", i+1)
             entity['Level'] = self.__try_get_attr__(data, "level", i+1)
+            entity['UpgradeCost'] = self.__try_get_attr__(data, "upgrade_cost", i+1)
+            entity['UpgradeResource'] = self.__try_get_attr__(data, "upgrade_resource").name
+            entity['UpgradeTime'] = self.__try_get_attr__(data, "upgrade_time", i+1).total_seconds()
+            entity['IsHomeVillage'] = self.__try_get_attr__(data, "_is_home_village")
+
+            # Spells and troops
+            entity['TrainingCost'] = self.__try_get_attr__(data, "training_cost", i+1)
+            entity['TrainingTime'] = self.__try_get_attr__(data, "training_time", i+1)
+
+            # Heroes and pets
+            regeneration_time = self.__try_get_attr__(data, "regeneration_time", i+1)
+            entity['AbilityTime'] = self.__try_get_attr__(data, "ability_time", i+1)
+            entity['AbilityTroopCount'] = self.__try_get_attr__(data, "ability_troop_count", i+1)
+            entity['RequiredTownhallLevel'] = self.__try_get_attr__(data, "required_th_level", i+1)
+            entity['RegenerationTime'] = regeneration_time.total_seconds() if regeneration_time is not None else None
+
             yield entity
 
     def __get_item_data__(self, func, category:str):
         items = self.__get_item_list__(category)
         for item in items:
-            LOGGER.debug(f'Scraping {item} data from {category} category.')
             data = func(item)
-            yield from self.__convert_data_to_entity_list__(data)
+            if (data is not None and data.id is not None and data.level is not None) or \
+                self.null_id_scrape_enabled:
+                LOGGER.debug(f'Scraping {item} data from {category} category.')
+                yield from self.__convert_data_to_entity_list__(data)
+            else:
+                LOGGER.debug(f'{item} data from {category} category is not scrape-able.')
 
     def __get_function__(self, category:str):
         match category:

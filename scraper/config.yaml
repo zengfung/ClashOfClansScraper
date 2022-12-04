@@ -2,6 +2,7 @@ TroopSettings:
   TableName: "TroopTest"
   Categories: ["hero", "pet", "troop", "spell"]
   ScrapeEnabled: true
+  NullIdScrapeEnabled: false
 
 GoldPassSettings:
   TableName: "GoldPassTest"
