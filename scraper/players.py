@@ -1,151 +1,121 @@
 import logging
 import coc
-import pandas as pd
-import scraper
-import scraper.common
-from datetime import datetime
-from typing import List
+import datetime
 
-PLAYER_FILENAME = "players.csv"
-TROOP_FILENAME = 'players_troop.csv'
-SPELL_FILENAME = 'players_spell.csv'
-HERO_FILENAME = 'players_hero.csv'
-HEROPET_FILENAME = 'players_heropet.csv'
+from typing import Dict
+from typing import Union
+from typing import Optional
+from typing import Generator
+from scraper import CONFIG
+from scraper.storage import StorageHandler
+
 LOGGER = logging.getLogger(__name__)
 
-class PlayerData:
-    def __init__(self, player:coc, scrape_time:datetime) -> None:
-        self.player = player
-        self.scrape_time = scrape_time
+class PlayerTableHandler(StorageHandler):
 
-    def collect_all_data(self) -> None:
-        LOGGER.debug(f'Collecting {self.player.name} basic information.')
-        self.base_details = self.collect_base_details()
+    configs = CONFIG['PlayerSettings']
+    table = configs['TableName']
+    scrape_enabled = configs['ScrapeEnabled']
+    players = configs['Players']
 
-        LOGGER.debug(f'Collecting {self.player.name} troop information.')
-        active_troop_list = self.player.troops
-        inactive_troop_list = list(set(self.player.super_troops) - set(self.player.home_troops))
-        troop_list = active_troop_list + inactive_troop_list
-        LOGGER.debug(f'{self.player.name} has {len(active_troop_list)} active troops and {len(inactive_troop_list)} inactive super troops.')
-        self.troop_data = self.collect_item_data(troop_list)
+    def __init__(self, coc_client:coc.Client, **kwargs) -> None:
+        super().__init__(self.table, **kwargs)
+        self.coc_client = coc_client
 
-        LOGGER.debug(f'Collecting {self.player.name} spell information.')
-        self.spell_data = self.collect_item_data(self.player.spells)
+    def __try_get_attr__(self, data:coc.abc.BasePlayer, attr:str, index:Optional[int] = None) -> Union[float,int,str]:
+        out = getattr(data, attr, None)
+        if out is not None and index is not None:
+            try:
+                return out[index]
+            except IndexError as ex:
+                LOGGER.error(str(ex))
+                return None
+        return out
 
-        LOGGER.debug(f'Collecting {self.player.name} hero information.')
-        self.hero_data = self.collect_item_data(self.player.heroes)
+    def __is_super_troop_active__(self, troop:coc.abc.DataContainer, data:coc.abc.BasePlayer) -> bool:
+        return True if troop in data.home_troops else False
 
-        LOGGER.debug(f'Collecting {self.player.name} hero pet information.')
-        self.heropet_data = self.collect_item_data(self.player.hero_pets)
+    def __add_base_details_to_entity__(self, data:coc) -> None:
+        # Mandatory keys
+        # PartitionKey to be defined as '{PlayerTag}-{TroopId}' when extracting troop details
+        self.entity['RowKey'] = datetime.datetime.now().strftime('%Y-%m-%d')
 
-    def collect_base_details(self) -> pd.DataFrame:
-        data = {
-            'date': self.scrape_time,
-            'tag': self.player.tag,
-            'name': self.player.name,
-            # Clan-level details
-            'clan': self.player.clan.tag if self.player.clan is not None else None,
-            'role': str(self.player.role) if self.player.clan is not None else None,
-            'clan_rank': self.player.clan_rank if self.player.clan is not None else None,
-            'clan_previous_rank': self.player.clan_previous_rank if self.player.clan is not None else None,
-            'donations': self.player.donations if self.player.clan is not None else None,
-            'received': self.player.received if self.player.clan is not None else None,
-            # Player-level details
-            'exp_level': self.player.exp_level,
-            'league_id': self.player.league.id,
-            'trophies': self.player.trophies,
-            'versus_trophies': self.player.versus_trophies,
-            'clan_capital_contributions': self.player.clan_capital_contributions,
-            'attack_wins': self.player.attack_wins,
-            'defense_wins': self.player.defense_wins,
-            'versus_attack_wins': self.player.versus_attack_wins,
-            'best_trophies': self.player.best_trophies,
-            'best_versus_trophies': self.player.best_versus_trophies,
-            'war_stars': self.player.war_stars,
-            'war_opted_in': self.player.war_opted_in,
-            'town_hall': self.player.town_hall,
-            'town_hall_weapon': self.player.town_hall_weapon,
-            'builder_hall': self.player.builder_hall,
-        }
+        # Identity keys
+        self.entity['SeasonId'] = datetime.datetime.now().strftime('%Y-%m')
+        self.entity['Tag'] = self.__try_get_attr__(data, 'tag')
+        self.entity['Name'] = self.__try_get_attr__(data, 'name')
 
-        df = pd.DataFrame(data=data, index=[0])
-        return df
+        # Clan-level details
+        self.entity['Clan'] = self.__try_get_attr__(data.clan, 'tag') if self.__try_get_attr__(data, 'clan') is not None else None
+        self.entity['Role'] = self.__try_get_attr__(data, 'role')
+        self.entity['ClanRank'] = self.__try_get_attr__(data, 'clan_rank')
+        self.entity['ClanPreviousRank'] = self.__try_get_attr__(data, 'clan_previous_rank')
+        self.entity['Donations'] = self.__try_get_attr__(data, 'donations')
+        self.entity['Received'] = self.__try_get_attr__(data, 'received')
 
-    def collect_troop_data(self) -> pd.DataFrame:
-        active_troop_list = self.player.troops
-        inactive_troop_list = list(set(self.player.super_troops) - set(self.player.home_troops))
-        troop_list = active_troop_list + inactive_troop_list
-        data = {
-            'date': self.scrape_time,
-            'tag': self.player.tag,
-            # Troop IDs and personal info
-            'id': [],
-            'level': [],
-            'townhall_max_level': [],
-            'village': [],
-            'is_max_for_townhall': [],
-            'is_active': []
-        }
+        # Player-level details
+        self.entity['ExpLevel'] = self.__try_get_attr__(data, 'exp_level')
+        self.entity['LeagueId'] = self.__try_get_attr__(data, 'league_id')
+        self.entity['Trophies'] = self.__try_get_attr__(data, 'trophies')
+        self.entity['VersusTrophies'] = self.__try_get_attr__(data, 'versus_trophies')
+        self.entity['ClanCapitalContributions'] = self.__try_get_attr__(data, 'clan_capital_contributions')
+        self.entity['AttackWins'] = self.__try_get_attr__(data, 'attack_wins')
+        self.entity['DefenseWins'] = self.__try_get_attr__(data, 'defense_wins')
+        self.entity['VersusAttackWins'] = self.__try_get_attr__(data, 'versus_attack_wins')
+        self.entity['BestTrophies'] = self.__try_get_attr__(data, 'best_trophies')
+        self.entity['BestVersusTrophies'] = self.__try_get_attr__(data, 'best_versus_trophies')
+        self.entity['WarStars'] = self.__try_get_attr__(data, 'war_stars')
+        self.entity['WarOptedIn'] = self.__try_get_attr__(data, 'war_opted_in')
+        self.entity['TownHall'] = self.__try_get_attr__(data, 'town_hall')
+        self.entity['TownHallWeapon'] = self.__try_get_attr__(data, 'town_hall_weapon')
+        self.entity['BuilderHall'] = self.__try_get_attr__(data, 'builder_hall')
 
-        for troop in troop_list:
-            data['id'] += [troop.id]
-            data['level'] += [troop.level]
-            data['townhall_max_level'] += [troop.get_max_level_for_townhall(self.player.town_hall)]
-            data['village'] += [troop.village]
-            data['is_max_for_townhall'] += [item.is_max_for_townhall]
-            data['is_active'] += [self.is_super_troop_active(troop) if troop.is_super_troop else None]
-
-        df = pd.DataFrame(data=data)
-        return df
-
-    def collect_item_data(self, item_list:List) -> pd.DataFrame:
-        data = {
-            'date': self.scrape_time,
-            'tag': self.player.tag,
-            # Item IDs and personal info
-            'id': [],
-            'level': [],
-            'townhall_max_level': [],
-            'village': [],
-            'is_max_for_townhall': [],
-            'is_active': []
-        }
-
-        for item in item_list:
-            data['id'] += [item.id]
-            data['level'] += [item.level]
-            data['townhall_max_level'] += [item.get_max_level_for_townhall(self.player.town_hall) if hasattr(item, 'get_max_level_for_townhall') else None]
-            data['village'] += [item.village]
-            data['is_max_for_townhall'] += [item.is_max_for_townhall  if hasattr(item, 'is_max_for_townhall') else None]
-            data['is_active'] += [self.is_super_troop_active(item) if (hasattr(item, 'is_super_troop') and item.is_super_troop) else None]
-
-        df = pd.DataFrame(data=data)
-        return df
-
-    def is_super_troop_active(self, troop:coc) -> bool:
-        return True if troop in self.player.home_troops else False
-
-    def update_tables(self, dir:str) -> None:
-        data_file_list = [
-            (self.base_details, PLAYER_FILENAME),
-            (self.troop_data, TROOP_FILENAME),
-            (self.spell_data, SPELL_FILENAME),
-            (self.hero_data, HERO_FILENAME),
-            (self.heropet_data, HEROPET_FILENAME)
-        ]
-
-        for (df, filename) in data_file_list:
-            scraper.common.create_or_append_table_if_needed(df, dir, filename, ['date', 'tag'])
-
-
-async def update_players_table(client:coc.Client, dir:str) -> None:
-    LOGGER.debug('Setup Player data scrape.')
-    scrape_date = datetime.now().strftime('%Y-%m-%d')
-    tags = scraper.CONFIG['players']
-    
-    LOGGER.debug('Scraping Player data.')
-    async for player in client.get_players(tags):
-        data_obj = PlayerData(player, scrape_date)
-        data_obj.collect_all_data()
-        data_obj.update_tables(dir)
+    def __add_troop_details_to_entity(self, data:coc.abc.BasePlayer) -> Generator[Dict[str,Union[float,int,str]],None,None]:
+        inactive_super_troops = list(set(data.super_troops) - set(data.home_troops))
+        troop_list = data.heroes + data.hero_pets + data.spells + data.troops + data.builder_troops + inactive_super_troops
         
+        for troop in troop_list:
+            # Skip troop if troop object is None or its Id and Level is None
+            if (troop is None or \
+                self.__try_get_attr__(troop, 'id') is None or \
+                self.__try_get_attr__(troop, 'level') is None):
+                LOGGER.debug(f'Skipping {troop} as it is either (1) None, (2) has None id, or (3) has None level.')
+                continue
+            
+            # PartitionKey to be defined as '{PlayerTag}-{TroopId}'
+            self.entity['PartitionKey'] = f"{self.__try_get_attr__(data, 'tag').lstrip('#')}-{self.__try_get_attr__(troop, 'id')}"
+
+            # Get troop details
+            self.entity['TroopId'] = self.__try_get_attr__(troop, 'id')
+            self.entity['TroopLevel'] = self.__try_get_attr__(troop, 'level')
+            self.entity['TroopVillage'] = self.__try_get_attr__(troop, 'village')
+            self.entity['TroopTownhallMaxLevel'] = troop.get_max_level_for_townhall(data.town_hall) if hasattr(troop, 'get_max_level_for_townhall') else None
+            self.entity['TroopIsMaxForTownhall'] = self.__try_get_attr__(data, 'is_max_for_townhall')
+            self.entity['TroopIsActive'] = self.__is_super_troop_active__(troop, data) if self.__try_get_attr__(data, 'is_super_troop') is not None else None
+            yield self.entity
+
+    def __convert_data_to_entity_list__(self, data:coc.abc.BasePlayer) -> Generator[Dict[str,Union[float,int,str]],None,None]:
+        self.entity = dict()
+        self.__add_base_details_to_entity__(data)
+        yield from self.__add_troop_details_to_entity(data)
+
+    async def __get_data__(self, player:str) -> Generator[Dict[str,Union[float,int,str]],None,None]:
+        data = await self.coc_client.get_player(player_tag=player)
+        return self.__convert_data_to_entity_list__(data)
+
+    async def __update_table__(self, player:str) -> None:
+        entities = await self.__get_data__(player)
+        self.__write_data_to_table__(entities=entities)
+
+    async def process_table(self) -> None:
+        if self.scrape_enabled:
+            LOGGER.info(f'Player table {self.table} is updating.')
+            for player in self.players:
+                try:
+                    LOGGER.debug(f'Updating table with player {player} data.')
+                    await self.__update_table__(player)
+                except Exception as ex:
+                    LOGGER.error(f'Unable to update table with {player} data.')
+                    LOGGER.error(str(ex))
+        else:
+            LOGGER.info(f'Player table {self.table} is not updated because PlayerSettings.ScrapeEnabled is {self.scrape_enabled}.')
