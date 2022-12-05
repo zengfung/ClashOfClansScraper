@@ -3,6 +3,10 @@ import coc
 import datetime
 
 from typing import List
+from typing import Callable
+from typing import Dict
+from typing import Generator
+from typing import Union
 from scraper import CONFIG
 from scraper.storage import StorageHandler
 
@@ -64,7 +68,7 @@ class TroopTableHandler(StorageHandler):
             case _:
                 LOGGER.error(f'No available list for item type {category}!')
 
-    def __get_entity_count__(self, data):
+    def __get_entity_count__(self, data:coc.abc.DataContainer) -> int:
         attrs = dir(data)
         count = 0
         for attr in attrs:
@@ -73,7 +77,7 @@ class TroopTableHandler(StorageHandler):
                 count = max(count, len(a))
         return count
 
-    def __try_get_attr__(self, data, attr, index=None):
+    def __try_get_attr__(self, data:coc.abc.DataContainer, attr:str, index:int = None) -> Union[float,int,str]:
         out = getattr(data, attr, None)
         if out is not None and index is not None:
             try:
@@ -84,7 +88,7 @@ class TroopTableHandler(StorageHandler):
                 return None
         return out
 
-    def __convert_data_to_entity_list__(self, data):
+    def __convert_data_to_entity_list__(self, data:coc.abc.DataContainer) -> Generator[Dict[str,Union[float,int,str]],None,None]:
         LOGGER.debug(f'Creating entity for {self.__try_get_attr__(data, "name")}.')
         for i in range(self.__get_entity_count__(data)):
             entity = dict()
@@ -139,18 +143,22 @@ class TroopTableHandler(StorageHandler):
 
             yield entity
 
-    def __get_item_data__(self, func, category:str):
+    def __get_item_data__(self, func:Callable[str,coc.abc.DataContainer], category:str) -> Generator[Dict[str,Union[float,int,str]],None,None]:
         items = self.__get_item_list__(category)
         for item in items:
             data = func(item)
             if (data is not None and data.id is not None and data.level is not None) or \
                 self.null_id_scrape_enabled:
-                LOGGER.debug(f'Scraping {item} data from {category} category.')
-                yield from self.__convert_data_to_entity_list__(data)
+                try:
+                    LOGGER.debug(f'Scraping {item} data from {category} category.')
+                    yield from self.__convert_data_to_entity_list__(data)
+                except Exception as ex:
+                    LOGGER.error(f'Unable to update table with {item} data from {category} category.')
+                    LOGGER.error(str(ex))
             else:
                 LOGGER.debug(f'{item} data from {category} category is not scrape-able.')
 
-    def __get_function__(self, category:str):
+    def __get_function__(self, category:str) -> Callable[str,coc.abc.DataContainer]:
         match category:
             case "hero":
                 return self.coc_client.get_hero
@@ -171,7 +179,7 @@ class TroopTableHandler(StorageHandler):
             case _:
                 LOGGER.debug(f'{category} is not a valid category.')
 
-    def __get_data__(self, category:str):
+    def __get_data__(self, category:str) -> Generator[Dict[str,Union[float,int,str]],None,None]:
         func = self.__get_function__(category)
         return self.__get_item_data__(func, category)
 
@@ -183,7 +191,11 @@ class TroopTableHandler(StorageHandler):
         if self.scrape_enabled:
             LOGGER.info(f'Troop table {self.table} is updating.')
             for category in self.categories:
-                LOGGER.debug(f'Updating table with {category} data.')
-                self.__update_table__(category)
+                try:
+                    LOGGER.debug(f'Updating table with {category} data.')
+                    self.__update_table__(category)
+                except Exception as ex:
+                    LOGGER.error(f'Unable to update table with {category} data.')
+                    LOGGER.error(str(ex))
         else:
             LOGGER.info(f'Troop table {self.table} is not updated because TroopSettings.ScrapeEnabled is {self.scrape_enabled}.')

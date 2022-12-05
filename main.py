@@ -55,22 +55,6 @@ async def main():
     writer = PlayerTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
     await writer.process_table()
 
-    # logging.info("Updating Heroes Table...")
-    # create_dataframe_for_ingame_data(client, "hero", args.output)
-    
-    # logging.info("Updating Pets Table...")
-    # create_dataframe_for_ingame_data(client, "pet", args.output)
-    
-    # logging.info("Updating Troops Table...")
-    # create_dataframe_for_ingame_data(client, "home_troop", args.output)
-    # create_dataframe_for_ingame_data(client, "super_troop", args.output)
-
-    # logging.info("Updating Spells Table...")
-    # create_dataframe_for_ingame_data(client, "spell", args.output)
-
-    # logging.info('Updating Players Table...')
-    # await update_players_table(client, args.output)
-
     await client.close()
 
 if __name__ == '__main__':

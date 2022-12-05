@@ -1,5 +1,8 @@
 import logging
+
 from scraper import CONFIG
+from typing import Dict
+from typing import Union
 from azure.core.exceptions import ResourceExistsError
 from azure.core.credentials import AzureNamedKeyCredential
 from azure.data.tables import TableServiceClient
@@ -47,7 +50,7 @@ class StorageHandler(object):
         LOGGER.info(f'Connecting to table client {name}')
         return self.service_table_client.create_table_if_not_exists(table_name=name)
 
-    def __write_data_to_table__(self, entities) -> None:
+    def __write_data_to_table__(self, entities: Dict[str,Union[float,int,str]]) -> None:
         LOGGER.debug(f'Writing entities to the table {self.table_client}.')
         for entity in entities:
             try:

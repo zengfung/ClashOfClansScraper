@@ -2,7 +2,10 @@ import logging
 import coc
 import datetime
 
-from typing import List
+from typing import Dict
+from typing import Union
+from typing import Optional
+from typing import Generator
 from scraper import CONFIG
 from scraper.storage import StorageHandler
 
@@ -19,7 +22,7 @@ class PlayerTableHandler(StorageHandler):
         super().__init__(self.table, **kwargs)
         self.coc_client = coc_client
 
-    def __try_get_attr__(self, data, attr, index=None):
+    def __try_get_attr__(self, data:coc.abc.BasePlayer, attr:str, index:Optional[int] = None) -> Union[float,int,str]:
         out = getattr(data, attr, None)
         if out is not None and index is not None:
             try:
@@ -29,10 +32,10 @@ class PlayerTableHandler(StorageHandler):
                 return None
         return out
 
-    def __is_super_troop_active__(self, troop:coc, data) -> bool:
+    def __is_super_troop_active__(self, troop:coc.abc.DataContainer, data:coc.abc.BasePlayer) -> bool:
         return True if troop in data.home_troops else False
 
-    def __add_base_details_to_entity__(self, data):
+    def __add_base_details_to_entity__(self, data:coc) -> None:
         # Mandatory keys
         # PartitionKey to be defined as '{PlayerTag}-{TroopId}' when extracting troop details
         self.entity['RowKey'] = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -67,7 +70,7 @@ class PlayerTableHandler(StorageHandler):
         self.entity['TownHallWeapon'] = self.__try_get_attr__(data, 'town_hall_weapon')
         self.entity['BuilderHall'] = self.__try_get_attr__(data, 'builder_hall')
 
-    def __add_troop_details_to_entity(self, data):
+    def __add_troop_details_to_entity(self, data:coc.abc.BasePlayer) -> Generator[Dict[str,Union[float,int,str]],None,None]:
         inactive_super_troops = list(set(data.super_troops) - set(data.home_troops))
         troop_list = data.heroes + data.hero_pets + data.spells + data.troops + data.builder_troops + inactive_super_troops
         
@@ -90,16 +93,16 @@ class PlayerTableHandler(StorageHandler):
             self.entity['TroopIsActive'] = self.__is_super_troop_active__(troop, data) if self.__try_get_attr__(data, 'is_super_troop') is not None else None
             yield self.entity
 
-    def __convert_data_to_entity_list__(self, data):
+    def __convert_data_to_entity_list__(self, data:coc.abc.BasePlayer) -> Generator[Dict[str,Union[float,int,str]],None,None]:
         self.entity = dict()
         self.__add_base_details_to_entity__(data)
         yield from self.__add_troop_details_to_entity(data)
 
-    async def __get_data__(self, player:str):
+    async def __get_data__(self, player:str) -> Generator[Dict[str,Union[float,int,str]],None,None]:
         data = await self.coc_client.get_player(player_tag=player)
         return self.__convert_data_to_entity_list__(data)
 
-    async def __update_table__(self, player) -> None:
+    async def __update_table__(self, player:str) -> None:
         entities = await self.__get_data__(player)
         self.__write_data_to_table__(entities=entities)
 
@@ -107,7 +110,11 @@ class PlayerTableHandler(StorageHandler):
         if self.scrape_enabled:
             LOGGER.info(f'Player table {self.table} is updating.')
             for player in self.players:
-                LOGGER.debug(f'Updating table with player {player} data.')
-                await self.__update_table__(player)
+                try:
+                    LOGGER.debug(f'Updating table with player {player} data.')
+                    await self.__update_table__(player)
+                except Exception as ex:
+                    LOGGER.error(f'Unable to update table with {player} data.')
+                    LOGGER.error(str(ex))
         else:
             LOGGER.info(f'Player table {self.table} is not updated because PlayerSettings.ScrapeEnabled is {self.scrape_enabled}.')
