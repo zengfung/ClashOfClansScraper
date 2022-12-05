@@ -79,6 +79,7 @@ class PlayerTableHandler(StorageHandler):
             if (troop is None or \
                 self.__try_get_attr__(troop, 'id') is None or \
                 self.__try_get_attr__(troop, 'level') is None):
+                LOGGER.debug(f'Skipping {troop} as it is either (1) None, (2) has None id, or (3) has None level.')
                 continue
             
             # PartitionKey to be defined as '{PlayerTag}-{TroopId}'
