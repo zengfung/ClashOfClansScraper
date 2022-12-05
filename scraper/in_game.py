@@ -40,7 +40,7 @@ class TroopTableHandler(StorageHandler):
                  "dark_elixir_spell":
                 return True
             case _:
-                LOGGER.debug(f'{category} is not a valid category.')
+                LOGGER.error(f'{category} is not a valid category.')
                 return False
 
     def __get_item_list__(self, category:str) -> List[str]:
@@ -177,7 +177,7 @@ class TroopTableHandler(StorageHandler):
                  "dark_elixir_spell":
                 return self.coc_client.get_spell
             case _:
-                LOGGER.debug(f'{category} is not a valid category.')
+                LOGGER.error(f'{category} is not a valid category.')
 
     def __get_data__(self, category:str) -> Generator[Dict[str,Union[float,int,str]],None,None]:
         func = self.__get_function__(category)
