@@ -143,7 +143,7 @@ class TroopTableHandler(StorageHandler):
 
             yield entity
 
-    def __get_item_data__(self, func:Callable[str,coc.abc.DataContainer], category:str) -> Generator[Dict[str,Union[float,int,str]],None,None]:
+    def __get_item_data__(self, func:Callable[[str],coc.abc.DataContainer], category:str) -> Generator[Dict[str,Union[float,int,str]],None,None]:
         items = self.__get_item_list__(category)
         for item in items:
             data = func(item)
@@ -158,7 +158,7 @@ class TroopTableHandler(StorageHandler):
             else:
                 LOGGER.debug(f'{item} data from {category} category is not scrape-able.')
 
-    def __get_function__(self, category:str) -> Callable[str,coc.abc.DataContainer]:
+    def __get_function__(self, category:str) -> Callable[[str],coc.abc.DataContainer]:
         match category:
             case "hero":
                 return self.coc_client.get_hero
