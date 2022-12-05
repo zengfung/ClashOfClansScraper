@@ -2,9 +2,9 @@ import argparse
 import asyncio
 import coc
 import logging
-from scraper import *
 from scraper.gold_pass import GoldPassTableHandler
 from scraper.in_game import TroopTableHandler
+from scraper.players import PlayerTableHandler
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -14,20 +14,24 @@ def parse_args():
     parser.add_argument('-k', '--access_key', help="Azure Table Storage access key.", type=str, required=False, default=None)
     parser.add_argument('-c', '--connection_string', help="Azure Table Storage connection string.", type=str, required=False, default=None)
     parser.add_argument('-o', '--output', help="Dataset output directory.", type=str, required=False, default="./data")
-    parser.add_argument('-v', '--verbosity', help="Increase output verbosity.", type=int, required=False, default=0, choices=[0,1,2])
+    parser.add_argument('-v', '--verbosity', help="Increase output verbosity.", type=int, required=False, default=0, choices=[0,1,2,3,4])
     args = parser.parse_args()
     return args
 
 def get_log_level(verbosity:int):
     match verbosity:
         case 0:
-            return logging.WARNING
+            return logging.DEBUG
         case 1:
             return logging.INFO
         case 2:
-            return logging.DEBUG
-        case _:
             return logging.WARNING
+        case 3:
+            return logging.ERROR
+        case 4:
+            return logging.CRITICAL
+        case _:
+            return logging.ERROR
 
 async def main():
     args = parse_args()
@@ -46,6 +50,10 @@ async def main():
     logging.info("Updating Troop Table...")
     writer = TroopTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
     writer.process_table()
+
+    logging.info("Updating Player Table...")
+    writer = PlayerTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
+    await writer.process_table()
 
     # logging.info("Updating Heroes Table...")
     # create_dataframe_for_ingame_data(client, "hero", args.output)

@@ -1,4 +1,5 @@
 import logging
+from scraper import CONFIG
 from azure.core.exceptions import ResourceExistsError
 from azure.core.credentials import AzureNamedKeyCredential
 from azure.data.tables import TableServiceClient
@@ -6,6 +7,10 @@ from azure.data.tables import TableServiceClient
 LOGGER = logging.getLogger(__name__)
 
 class StorageHandler(object):
+
+    configs = CONFIG['StorageHandlerSettings']
+    upsert_enabled = configs['UpsertAtFailedPushEnabled']
+
     def __init__(self,
                  table_name:str, 
                  account_name:str = None, 
@@ -49,12 +54,15 @@ class StorageHandler(object):
                 self.table_client.create_entity(entity=entity)
                 LOGGER.debug('Successfully written entity to table.')
             except ResourceExistsError:
-                LOGGER.warning('Entity already exists, attempting upsert of entity.')
-                try:
-                    self.table_client.upsert_entity(entity=entity)
-                    LOGGER.debug('Successfully upsert entity.')
-                except Exception as ex:
-                    LOGGER.error('Failed to upsert entity.')
-                    LOGGER.error(str(ex))
+                LOGGER.warning(f'Entity {entity["PartitionKey"]} already exists in {self.table_client}.')
+
+                if self.upsert_enabled:
+                    try:
+                        LOGGER.debug(f'Attempting upsert of entity {entity["PartitionKey"]} to {self.table_client}')
+                        self.table_client.upsert_entity(entity=entity)
+                        LOGGER.debug('Successfully upsert entity.')
+                    except Exception as ex:
+                        LOGGER.error('Failed to upsert entity.')
+                        LOGGER.error(str(ex))
         LOGGER.debug('Sent all entities to table.')
     

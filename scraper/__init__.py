@@ -1,8 +1,6 @@
 import yaml
 from pathlib import Path
 
-from .players import update_players_table
-
 CURRENT_DIR = Path(__file__).parent
 CONFIG_FILE = 'config.yaml'
 

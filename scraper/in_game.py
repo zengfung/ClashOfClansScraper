@@ -79,7 +79,8 @@ class TroopTableHandler(StorageHandler):
             try:
                 return out[index]
             except IndexError as ex:
-                LOGGER.error(str(ex))
+                LOGGER.warning(f'IndexError obtained at {attr}.')
+                LOGGER.warning(str(ex))
                 return None
         return out
 
@@ -114,8 +115,20 @@ class TroopTableHandler(StorageHandler):
             entity['IsHomeVillage'] = self.__try_get_attr__(data, "_is_home_village")
 
             # Spells and troops
+            cooldown = self.__try_get_attr__(data, "cooldown", i+1)
+            duration = self.__try_get_attr__(data, "duration", i+1)
             entity['TrainingCost'] = self.__try_get_attr__(data, "training_cost", i+1)
             entity['TrainingTime'] = self.__try_get_attr__(data, "training_time", i+1)
+            entity['IsElixirSpell'] = self.__try_get_attr__(data, "is_elixir_spell")
+            entity['IsDarkSpell'] = self.__try_get_attr__(data, "is_dark_spell")
+            entity['IsElixirTroop'] = self.__try_get_attr__(data, "is_elixir_troop")
+            entity['IsDarkTroop'] = self.__try_get_attr__(data, "is_dark_troop")
+            entity['IsSiegeMachine'] = self.__try_get_attr__(data, "is_siege_machine")
+            entity['IsSuperTroop'] = self.__try_get_attr__(data, "is_super_troop")
+            entity['Cooldown'] = cooldown.total_seconds() if cooldown is not None else None
+            entity['Duration'] = duration.total_seconds() if duration is not None else None
+            entity['MinOriginalLevel'] = self.__try_get_attr__(data, "min_original_level")
+            entity['OriginalTroopId'] = self.__try_get_attr__(data, "original_troop_id")
 
             # Heroes and pets
             regeneration_time = self.__try_get_attr__(data, "regeneration_time", i+1)

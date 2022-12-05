@@ -1,15 +1,18 @@
+StorageHandlerSettings:
+  UpsertAtFailedPushEnabled: false
+
 TroopSettings:
-  TableName: "TroopTest"
+  TableName: "Troop"
   Categories: ["hero", "pet", "troop", "spell"]
   ScrapeEnabled: true
-  NullIdScrapeEnabled: false
+  NullIdScrapeEnabled: true
 
 GoldPassSettings:
-  TableName: "GoldPassTest"
+  TableName: "GoldPass"
   ScrapeEnabled: true
 
 PlayerSettings:
-  TableName: "player_test"
+  TableName: "Player"
   ScrapeEnabled: true
   # Player data to be scraped.
   #   wantosleep: #Y9VG28UL
