@@ -6,7 +6,7 @@ dependencies:
   - requests=2.28.1
   - pip=22.2.2
   - pip:
-    - coc-py==2.2.0
+    - coc-py==2.2.1
     - asyncio==3.4.3
     - pyyaml==6.0
     - azure-data-tables==12.4.1
