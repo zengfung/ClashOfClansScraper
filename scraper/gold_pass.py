@@ -12,12 +12,15 @@ LOGGER = logging.getLogger(__name__)
     
 class GoldPassTableHandler(StorageHandler):
     """
-    The Gold Pass table is updated once a month.  The table is updated with the current season's data.
+    The Gold Pass table is updated once a month.  The table is updated with 
+    the current season's data.
 
     Attributes
     ----------
     coc_client : coc.Client
         The client used to access the Clash of Clans API.
+    table : str
+        The name of the table.
     scrape_enabled : bool
         Determines if data scraping should be performed.
     

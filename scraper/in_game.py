@@ -10,10 +10,56 @@ from typing import Union
 from scraper import CONFIG
 from scraper.storage import StorageHandler
 
-
 LOGGER = logging.getLogger(__name__)
 
 class TroopTableHandler(StorageHandler):
+    """
+    The troop table is updated once a month. This data is not scraped 
+    directly from the Clash of Clans API, and is instead obtained from the 
+    coc.py library. Therefore, the data may not always be up to date.
+
+    Attributes
+    ----------
+    coc_client : coc.Client
+        The client used to access the Clash of Clans API.
+    table : str
+        The name of the table to be updated.
+    categories : List[str]
+        The categories of troops to scrape.
+    scrape_enabled : bool
+        Determines if data scraping should be performed.
+    null_id_scrape_enabled : bool
+        Determines if data scraping should be performed for items with a 
+        null id.
+    
+    Methods
+    -------
+    __is_valid_category__(category: str) -> bool
+        Determines if the given category is valid.
+    __get_item_list__(category: str) -> List[str]
+        Returns the list of items for the given category.
+    __get_entity_count__(data: coc.abc.DataContainer) -> int
+        Returns the number of entities to insert/upsert to the table for a 
+        particular item.
+    __try_get_attr__(data: coc.abc.DataContainer, attr: str, index: int = None) -> Union[float,int,str]
+        Returns the value of the given attribute for the given data if the 
+        attribute exists. Otherwise, returns None.
+    __convert_data_to_entity_list__(data: coc.abc.DataContainer) -> Generator[Dict[str,Union[float,int,str]],None,None]
+        Converts the given data to a list of entities to insert/upsert to
+        the table.
+    __get_item_data__(func: Callable[[str],coc.abc.DataContainer], category: str) -> Generator[Dict[str,Union[float,int,str]],None,None]
+        Returns a generator of dictionaries containing the data for each
+        entity to be inserted/upserted to the table.
+    __get_function__(category: str) -> Callable[[str],coc.abc.DataContainer]
+        Returns the function used to obtain the data for the given category.
+    __get_data__(category: str) -> Generator[Dict[str,Union[float,int,str]],None,None]
+        Returns a generator of dictionaries containing the data for each
+        entity of all items in the category to be inserted/upserted to the table.
+    __update_table__(category: str) -> None
+        Updates the table for the given category.
+    process_table() -> None
+        Updates the troop table.
+    """
 
     configs = CONFIG['TroopSettings']
     table = configs['TableName']
@@ -22,11 +68,32 @@ class TroopTableHandler(StorageHandler):
     null_id_scrape_enabled = configs['NullIdScrapeEnabled']
 
     def __init__(self, coc_client:coc.Client, **kwargs) -> None:
+        """
+        Parameters
+        ----------
+        coc_client : coc.Client
+            The client used to access the Clash of Clans API.
+        """
+
         super().__init__(self.table, **kwargs)
         self.coc_client = coc_client
         self.categories = [category for category in self.categories if self.__is_valid_category__(category)]
 
-    def __is_valid_category__(self, category:str) -> bool:
+    def __is_valid_category__(self, category: str) -> bool:
+        """
+        Determines if the given category is valid.
+
+        Parameters
+        ----------
+        category : str
+            The category to check.
+
+        Returns
+        -------
+        bool
+            True if the category is valid, False otherwise.
+        """
+
         match category:
             case "hero" | \
                  "pet" | \
@@ -43,7 +110,21 @@ class TroopTableHandler(StorageHandler):
                 LOGGER.error(f'{category} is not a valid category.')
                 return False
 
-    def __get_item_list__(self, category:str) -> List[str]:
+    def __get_item_list__(self, category: str) -> List[str]:
+        """
+        Returns the list of items for the given category.
+
+        Parameters
+        ----------
+        category : str
+            The category to get the item list for.
+
+        Returns
+        -------
+        List[str]
+            The list of items for the given category.
+        """
+
         match category:
             case "hero":
                 return coc.HERO_ORDER
@@ -68,7 +149,23 @@ class TroopTableHandler(StorageHandler):
             case _:
                 LOGGER.error(f'No available list for item type {category}!')
 
-    def __get_entity_count__(self, data:coc.abc.DataContainer) -> int:
+    def __get_entity_count__(self, data: coc.abc.DataContainer) -> int:
+        """
+        Returns the number of entities to insert/upsert to the table for a
+        particular item.
+
+        Parameters
+        ----------
+        data : coc.abc.DataContainer
+            The data to get the entity count for.
+
+        Returns
+        -------
+        int
+            The number of entities to insert/upsert to the table for a
+            particular item.
+        """
+
         attrs = dir(data)
         count = 0
         for attr in attrs:
@@ -77,7 +174,29 @@ class TroopTableHandler(StorageHandler):
                 count = max(count, len(a))
         return count
 
-    def __try_get_attr__(self, data:coc.abc.DataContainer, attr:str, index:int = None) -> Union[float,int,str]:
+    def __try_get_attr__(self, 
+                         data: coc.abc.DataContainer, 
+                         attr: str, 
+                         index: int = None) -> Union[float,int,str]:
+        """
+        Returns the value of the given attribute for the given data if the
+        attribute exists. Otherwise, returns None.
+
+        Parameters
+        ----------
+        data : coc.abc.DataContainer
+            The data to get the attribute from.
+        attr : str
+            The attribute to get.
+        index : int, optional
+            The index of the attribute to get if the attribute is a list.
+
+        Returns
+        -------
+        Union[float,int,str]
+            The value of the attribute if it exists. Otherwise, returns None.
+        """
+
         out = getattr(data, attr, None)
         if out is not None and index is not None:
             try:
@@ -88,7 +207,23 @@ class TroopTableHandler(StorageHandler):
                 return None
         return out
 
-    def __convert_data_to_entity_list__(self, data:coc.abc.DataContainer) -> Generator[Dict[str,Union[float,int,str]],None,None]:
+    def __convert_data_to_entity_list__(self, data: coc.abc.DataContainer) -> Generator[Dict[str,Union[float,int,str]],None,None]:
+        """
+        Converts the given data to a list of entities to insert/upsert to
+        the table.
+
+        Parameters
+        ----------
+        data : coc.abc.DataContainer
+            The data to convert to a list of entities.
+
+        Yields
+        ------
+        Dict[str,Union[float,int,str]]
+            A dictionary containing the data for an entity to insert/upsert
+            to the table.
+        """
+
         LOGGER.debug(f'Creating entity for {self.__try_get_attr__(data, "name")}.')
         for i in range(self.__get_entity_count__(data)):
             entity = dict()
@@ -143,7 +278,25 @@ class TroopTableHandler(StorageHandler):
 
             yield entity
 
-    def __get_item_data__(self, func:Callable[[str],coc.abc.DataContainer], category:str) -> Generator[Dict[str,Union[float,int,str]],None,None]:
+    def __get_item_data__(self, func: Callable[[str],coc.abc.DataContainer], category: str) -> Generator[Dict[str,Union[float,int,str]],None,None]:
+        """
+        Retrieves the data for the given category and converts it to a list
+        of entities to insert/upsert to the table.
+
+        Parameters
+        ----------
+        func : Callable[[str],coc.abc.DataContainer]
+            The function to call to retrieve the data.
+        category : str
+            The category of the data to retrieve.
+
+        Yields
+        ------
+        Dict[str,Union[float,int,str]]
+            A dictionary containing the data for an entity to insert/upsert
+            to the table.
+        """
+
         items = self.__get_item_list__(category)
         for item in items:
             data = func(item)
@@ -158,7 +311,21 @@ class TroopTableHandler(StorageHandler):
             else:
                 LOGGER.debug(f'{item} data from {category} category is not scrape-able.')
 
-    def __get_function__(self, category:str) -> Callable[[str],coc.abc.DataContainer]:
+    def __get_function__(self, category: str) -> Callable[[str],coc.abc.DataContainer]:
+        """
+        Returns the function to call to retrieve the data for the given category.
+
+        Parameters
+        ----------
+        category : str
+            The category of the data to retrieve.
+
+        Returns
+        -------
+        Callable[[str],coc.abc.DataContainer]
+            The function to call to retrieve the data.
+        """
+
         match category:
             case "hero":
                 return self.coc_client.get_hero
@@ -179,15 +346,44 @@ class TroopTableHandler(StorageHandler):
             case _:
                 LOGGER.error(f'{category} is not a valid category.')
 
-    def __get_data__(self, category:str) -> Generator[Dict[str,Union[float,int,str]],None,None]:
+    def __get_data__(self, category: str) -> Generator[Dict[str,Union[float,int,str]],None,None]:
+        """
+        Retrieves the data for the given category and converts it to a list
+        of entities to insert/upsert to the table.
+
+        Parameters
+        ----------
+        category : str
+            The category of the data to retrieve.
+        
+        Yields
+        ------
+        Dict[str,Union[float,int,str]]
+            A dictionary containing the data for an entity to insert/upsert
+            to the table.
+        """
+
         func = self.__get_function__(category)
         return self.__get_item_data__(func, category)
 
-    def __update_table__(self, category:str) -> None:
+    def __update_table__(self, category: str) -> None:
+        """
+        Updates the table with the data for the given category.
+
+        Parameters
+        ----------
+        category : str
+            The category of the data to retrieve.
+        """
+        
         entities = self.__get_data__(category)
         self.__write_data_to_table__(entities=entities)
 
     def process_table(self) -> None:
+        """
+        Updates the table with the data for all categories.
+        """
+
         if self.scrape_enabled:
             LOGGER.info(f'Troop table {self.table} is updating.')
             for category in self.categories:
