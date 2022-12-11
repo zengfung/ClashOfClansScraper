@@ -3,7 +3,7 @@ import asyncio
 import coc
 import logging
 from scraper.gold_pass import GoldPassTableHandler
-from scraper.in_game import TroopTableHandler
+from scraper.troops import TroopTableHandler
 from scraper.players import PlayerTableHandler
 
 def parse_args():
