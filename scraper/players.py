@@ -192,6 +192,7 @@ class PlayerTableHandler(StorageHandler):
                 continue
             
             # PartitionKey to be defined as '{PlayerTag}-{TroopId}'
+            LOGGER.warning(f'Adding {troop} to entity.')
             self.entity['PartitionKey'] = f"{self.__try_get_attr__(data, 'tag').lstrip('#')}-{self.__try_get_attr__(troop, 'id')}"
 
             # Get troop details
@@ -253,6 +254,25 @@ class PlayerTableHandler(StorageHandler):
 
         entities = await self.__get_data__(player)
         self.__write_data_to_table__(entities=entities)
+
+    async def scrape_clan_members(self, member_tags: Generator[str,None,None]) -> None:
+        """
+        Scrapes the clan members and updates the table.
+
+        Parameters
+        ----------
+        clan_tag : str
+            The clan tag to scrape the members from.
+        """
+
+        LOGGER.info(f'Player table {self.table} is updating.')
+        for member_tag in member_tags:
+            try:
+                LOGGER.debug(f'Updating table with player {member_tag} data.')
+                await self.__update_table__(player=member_tag)
+            except Exception as ex:
+                LOGGER.error(f'Unable to update table with {member_tag} data.')
+                LOGGER.error(str(ex))
 
     async def process_table(self) -> None:
         """

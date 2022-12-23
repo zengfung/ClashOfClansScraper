@@ -22,7 +22,7 @@ PlayerSettings:
   Players: ["#Y9VG28UL", "#LG8U8UC99", "#YG2V9YPUP", "#QPPLYYJGY"]
 
 ClanSettings:
-  TableName: "clan"
+  TableName: "Clan"
   ScrapeEnabled: true
-  Clans: []
-  ScrapeAllMembersEnabled: true
+  Clans: ["#9J82VUV"]
+  MemberScrapeEnabled: true
