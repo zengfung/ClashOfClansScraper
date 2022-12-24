@@ -13,11 +13,10 @@ LOGGER = logging.getLogger(__name__)
 
 class PlayerTableHandler(StorageHandler):
     """
-    The player table is updated every 24 hours. The table contains a 
-    player's current progress in the game. Currently, this means that only 
-    in-game achievements and troop levels are being logged, other data such 
-    as building levels, attack/defense logs are not collected as they're not 
-    scrape-able via Clash of Clans API.
+    The table contains a player's current progress in the game. Currently, 
+    this means that only in-game achievements and troop levels are being 
+    logged, other data such as building levels, attack/defense logs are not 
+    collected as they're not scrape-able via Clash of Clans API.
 
     Attributes
     ----------
@@ -51,6 +50,8 @@ class PlayerTableHandler(StorageHandler):
         inserted/upserted to the table.
     __update_table__(player: str) -> None
         Updates the table for a given player.
+    scrape_clan_members(member_tags: Generator[str,None,None]) -> None:
+        Scrapes the clan members and updates the table.
     process_table() -> None
         Updates the player table.
     """
@@ -192,6 +193,7 @@ class PlayerTableHandler(StorageHandler):
                 continue
             
             # PartitionKey to be defined as '{PlayerTag}-{TroopId}'
+            LOGGER.warning(f'Adding {troop} to entity.')
             self.entity['PartitionKey'] = f"{self.__try_get_attr__(data, 'tag').lstrip('#')}-{self.__try_get_attr__(troop, 'id')}"
 
             # Get troop details
@@ -251,8 +253,28 @@ class PlayerTableHandler(StorageHandler):
             The player tag to update the table with.
         """
 
+        # TODO: How to prevent data scraping if data is already present in table?
         entities = await self.__get_data__(player)
         self.__write_data_to_table__(entities=entities)
+
+    async def scrape_clan_members(self, member_tags: Generator[str,None,None]) -> None:
+        """
+        Scrapes the clan members and updates the table.
+
+        Parameters
+        ----------
+        member_tags : Generator[str,None,None]
+            The clan members' player tags for data scraping.
+        """
+
+        LOGGER.info(f'Player table {self.table} is updating.')
+        for member_tag in member_tags:
+            try:
+                LOGGER.debug(f'Updating table with player {member_tag} data.')
+                await self.__update_table__(player=member_tag)
+            except Exception as ex:
+                LOGGER.error(f'Unable to update table with {member_tag} data.')
+                LOGGER.error(str(ex))
 
     async def process_table(self) -> None:
         """
