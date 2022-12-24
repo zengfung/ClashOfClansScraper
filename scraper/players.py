@@ -13,11 +13,10 @@ LOGGER = logging.getLogger(__name__)
 
 class PlayerTableHandler(StorageHandler):
     """
-    The player table is updated every 24 hours. The table contains a 
-    player's current progress in the game. Currently, this means that only 
-    in-game achievements and troop levels are being logged, other data such 
-    as building levels, attack/defense logs are not collected as they're not 
-    scrape-able via Clash of Clans API.
+    The table contains a player's current progress in the game. Currently, 
+    this means that only in-game achievements and troop levels are being 
+    logged, other data such as building levels, attack/defense logs are not 
+    collected as they're not scrape-able via Clash of Clans API.
 
     Attributes
     ----------
@@ -51,6 +50,8 @@ class PlayerTableHandler(StorageHandler):
         inserted/upserted to the table.
     __update_table__(player: str) -> None
         Updates the table for a given player.
+    scrape_clan_members(member_tags: Generator[str,None,None]) -> None:
+        Scrapes the clan members and updates the table.
     process_table() -> None
         Updates the player table.
     """
@@ -261,8 +262,8 @@ class PlayerTableHandler(StorageHandler):
 
         Parameters
         ----------
-        clan_tag : str
-            The clan tag to scrape the members from.
+        member_tags : Generator[str,None,None]
+            The clan members' player tags for data scraping.
         """
 
         LOGGER.info(f'Player table {self.table} is updating.')

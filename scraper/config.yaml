@@ -15,14 +15,19 @@ PlayerSettings:
   TableName: "Player"
   ScrapeEnabled: true
   # Player data to be scraped.
-  #   wantosleep: #Y9VG28UL
-  #   wantosleep2: #LG8U8UC99
-  #   zWyeBroken: #YG2V9YPUP
   #   zoecmy: #QPPLYYJGY
-  Players: ["#Y9VG28UL", "#LG8U8UC99", "#YG2V9YPUP", "#QPPLYYJGY"]
+  Players: ["#QPPLYYJGY"]
 
 ClanSettings:
   TableName: "Clan"
   ScrapeEnabled: true
-  Clans: ["#9J82VUV"]
+  # Clan data to be scraped.
+  #   ATAS: #9J82VUV
+  #     includes:
+  #       - #Y9VG28UL: wantosleep
+  #       - #LG8U8UC99: wantosleep2
+  #   Syrius: #2RQ2VR89
+  #     includes:
+  #       - #YG2V9YPUP: zWyeBroken
+  Clans: ["#9J82VUV", "#2RQ2VR89"]
   MemberScrapeEnabled: true
