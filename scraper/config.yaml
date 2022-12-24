@@ -1,5 +1,5 @@
 StorageHandlerSettings:
-  UpsertAtFailedPushEnabled: false
+  UpsertAtFailedPushEnabled: true
 
 TroopSettings:
   TableName: "Troop"

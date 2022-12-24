@@ -2,6 +2,7 @@ import logging
 import coc
 import datetime
 
+from typing import Any
 from typing import List
 from typing import Callable
 from typing import Dict
@@ -131,7 +132,7 @@ class TroopTableHandler(StorageHandler):
             case "pet":
                 return coc.HERO_PETS_ORDER
             case "troop":
-                return coc.HOME_TROOP_ORDER + coc.BUILDER_TROOPS_ORDER
+                return coc.HOME_TROOP_ORDER + coc.BUILDER_TROOPS_ORDER + coc.SUPER_TROOP_ORDER
             case "siege_machine":
                 return coc.SIEGE_MACHINE_ORDER         
             case "super_troop":
@@ -177,7 +178,8 @@ class TroopTableHandler(StorageHandler):
     def __try_get_attr__(self, 
                          data: coc.abc.DataContainer, 
                          attr: str, 
-                         index: int = None) -> Union[float,int,str]:
+                         index: int = None,
+                         default: Any = None) -> Union[float,int,str]:
         """
         Returns the value of the given attribute for the given data if the
         attribute exists. Otherwise, returns None.
@@ -197,14 +199,21 @@ class TroopTableHandler(StorageHandler):
             The value of the attribute if it exists. Otherwise, returns None.
         """
 
-        out = getattr(data, attr, None)
-        if out is not None and index is not None:
+        out = getattr(data, attr, default)
+
+        if out is None:
+            return default
+
+        if isinstance(out, list) and len(out) == 0:
+            return default
+
+        if index is not None:
             try:
                 return out[index]
             except IndexError as ex:
-                LOGGER.warning(f'IndexError obtained at {attr}.')
-                LOGGER.warning(str(ex))
-                return None
+                LOGGER.error(f'IndexError obtained at {attr}.')
+                LOGGER.error(str(ex))
+                return default
         return out
 
     def __convert_data_to_entity_list__(self, data: coc.abc.DataContainer) -> Generator[Dict[str,Union[float,int,str]],None,None]:
@@ -228,7 +237,7 @@ class TroopTableHandler(StorageHandler):
         for i in range(self.__get_entity_count__(data)):
             entity = dict()
             # Mandatory keys
-            entity['PartitionKey'] = f'{self.__try_get_attr__(data, "id")}_{self.__try_get_attr__(data, "level", i+1)}'
+            entity['PartitionKey'] = f'{self.__try_get_attr__(data, "id")}_{self.__try_get_attr__(data, "level", i+1, default=i+1)}'
             entity['RowKey'] = f'{datetime.datetime.now().strftime("%Y-%m")}'
 
             # Identity keys
@@ -239,6 +248,7 @@ class TroopTableHandler(StorageHandler):
             # Details
             lab_level = self.__try_get_attr__(data, "lab_level", i+1)
             townhall_level = self.__try_get_attr__(data, "lab_to_townhall", lab_level) if lab_level is not None else None
+            upgrade_time = self.__try_get_attr__(data, "upgrade_time", i+1)
             entity['Range'] = self.__try_get_attr__(data, "range", i+1)
             entity['Dps'] = self.__try_get_attr__(data, "dps", i+1)
             entity['GroundTarget'] = self.__try_get_attr__(data, "ground_target")
@@ -247,15 +257,18 @@ class TroopTableHandler(StorageHandler):
             entity['LabLevel'] = self.__try_get_attr__(data, "lab_level", i+1)
             entity['TownhallLevel'] = townhall_level
             entity['Speed'] = self.__try_get_attr__(data, "speed", i+1)
-            entity['Level'] = self.__try_get_attr__(data, "level", i+1)
+            entity['Level'] = self.__try_get_attr__(data, "level", i+1, default=i+1)
             entity['UpgradeCost'] = self.__try_get_attr__(data, "upgrade_cost", i+1)
             entity['UpgradeResource'] = self.__try_get_attr__(data, "upgrade_resource").name
-            entity['UpgradeTime'] = self.__try_get_attr__(data, "upgrade_time", i+1).total_seconds()
+            entity['UpgradeTime'] = upgrade_time.total_seconds() if upgrade_time is not None else None
             entity['IsHomeVillage'] = self.__try_get_attr__(data, "_is_home_village")
 
             # Spells and troops
-            cooldown = self.__try_get_attr__(data, "cooldown", i+1)
-            duration = self.__try_get_attr__(data, "duration", i+1)
+            # Note: Cooldown and Duration only applies to super troops, and 
+            # is always a list of 1 item.
+            cooldown = self.__try_get_attr__(data, "cooldown", 1)
+            duration = self.__try_get_attr__(data, "duration", 1)
+            original_troop = self.__try_get_attr__(data, "original_troop")
             entity['TrainingCost'] = self.__try_get_attr__(data, "training_cost", i+1)
             entity['TrainingTime'] = self.__try_get_attr__(data, "training_time", i+1)
             entity['IsElixirSpell'] = self.__try_get_attr__(data, "is_elixir_spell")
@@ -267,7 +280,7 @@ class TroopTableHandler(StorageHandler):
             entity['Cooldown'] = cooldown.total_seconds() if cooldown is not None else None
             entity['Duration'] = duration.total_seconds() if duration is not None else None
             entity['MinOriginalLevel'] = self.__try_get_attr__(data, "min_original_level")
-            entity['OriginalTroopId'] = self.__try_get_attr__(data, "original_troop_id")
+            entity['OriginalTroopId'] = self.__try_get_attr__(original_troop, "id") if original_troop is not None else None
 
             # Heroes and pets
             regeneration_time = self.__try_get_attr__(data, "regeneration_time", i+1)
@@ -275,7 +288,7 @@ class TroopTableHandler(StorageHandler):
             entity['AbilityTroopCount'] = self.__try_get_attr__(data, "ability_troop_count", i+1)
             entity['RequiredTownhallLevel'] = self.__try_get_attr__(data, "required_th_level", i+1)
             entity['RegenerationTime'] = regeneration_time.total_seconds() if regeneration_time is not None else None
-
+            
             yield entity
 
     def __get_item_data__(self, func: Callable[[str],coc.abc.DataContainer], category: str) -> Generator[Dict[str,Union[float,int,str]],None,None]:
@@ -300,16 +313,24 @@ class TroopTableHandler(StorageHandler):
         items = self.__get_item_list__(category)
         for item in items:
             data = func(item)
-            if (data is not None and data.id is not None and data.level is not None) or \
-                self.null_id_scrape_enabled:
-                try:
-                    LOGGER.debug(f'Scraping {item} data from {category} category.')
-                    yield from self.__convert_data_to_entity_list__(data)
-                except Exception as ex:
-                    LOGGER.error(f'Unable to update table with {item} data from {category} category.')
-                    LOGGER.error(str(ex))
-            else:
-                LOGGER.debug(f'{item} data from {category} category is not scrape-able.')
+
+            if data is None:
+                LOGGER.warning(f'No data found for {item}.')
+                LOGGER.warning(f'{item} data from {category} category is not scrape-able.')
+                continue
+
+            if self.__try_get_attr__(data, 'id') is None and \
+               not self.null_id_scrape_enabled:
+                LOGGER.warning(f'No ID found for {item} and null_id_scrape_enabled is set to {self.null_id_scrape_enabled}.')
+                LOGGER.warning(f'{item} data from {category} category is not scrape-able.')
+                continue
+
+            try:
+                LOGGER.debug(f'Scraping {item} data from {category} category.')
+                yield from self.__convert_data_to_entity_list__(data)
+            except Exception as ex:
+                LOGGER.error(f'Unable to update table with {item} data from {category} category.')
+                LOGGER.error(str(ex))
 
     def __get_function__(self, category: str) -> Callable[[str],coc.abc.DataContainer]:
         """
