@@ -98,6 +98,7 @@ class GoldPassTableHandler(StorageHandler):
         Scrape and update the table with the current Gold Pass Season data.
         """
 
+        # TODO: How to prevent data scraping if data is already present in table?
         LOGGER.debug('Scraping Gold Pass data.')
         data = await self.coc_client.get_current_goldpass_season()
         entities = self.__convert_data_to_entity_list__(data)

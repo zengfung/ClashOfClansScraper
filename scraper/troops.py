@@ -237,6 +237,7 @@ class TroopTableHandler(StorageHandler):
         for i in range(self.__get_entity_count__(data)):
             entity = dict()
             # Mandatory keys
+            # TODO: How to deal with hero pet scenario where there is no id?
             entity['PartitionKey'] = f'{self.__try_get_attr__(data, "id")}_{self.__try_get_attr__(data, "level", i+1, default=i+1)}'
             entity['RowKey'] = f'{datetime.datetime.now().strftime("%Y-%m")}'
 
@@ -312,6 +313,7 @@ class TroopTableHandler(StorageHandler):
 
         items = self.__get_item_list__(category)
         for item in items:
+            # TODO: How to scrape data from builder base?
             data = func(item)
 
             if data is None:
@@ -397,6 +399,7 @@ class TroopTableHandler(StorageHandler):
             The category of the data to retrieve.
         """
         
+        # TODO: How to prevent data scraping if data is already present in table?
         entities = self.__get_data__(category)
         self.__write_data_to_table__(entities=entities)
 

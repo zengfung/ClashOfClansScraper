@@ -159,7 +159,8 @@ class ClanTableHandler(StorageHandler):
         clan : coc.Clan
             The clan whose data needs to be updated.
         """
-        
+
+        # TODO: How to prevent data scraping if data is already present in the table?
         entities = self.__convert_data_to_entity_list__(clan)
         self.__write_data_to_table__(entities=entities)
 

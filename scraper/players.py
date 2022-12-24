@@ -253,6 +253,7 @@ class PlayerTableHandler(StorageHandler):
             The player tag to update the table with.
         """
 
+        # TODO: How to prevent data scraping if data is already present in table?
         entities = await self.__get_data__(player)
         self.__write_data_to_table__(entities=entities)
 
