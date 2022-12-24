@@ -231,7 +231,7 @@ class TroopTableHandler(StorageHandler):
             to the table.
         """
 
-        LOGGER.debug(f'Creating entity for {self.__try_get_attr__(data, "name")}.')
+        LOGGER.debug(f'Creating entity for {self.__try_get_attr__(data, "name")} with ID {self.__try_get_attr__(data, "id")}.')
         for i in range(self.__get_entity_count__(data)):
             entity = dict()
             # Mandatory keys
