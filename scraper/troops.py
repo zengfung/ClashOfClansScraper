@@ -1,5 +1,4 @@
 import logging
-from operator import is_
 import coc
 import datetime
 
