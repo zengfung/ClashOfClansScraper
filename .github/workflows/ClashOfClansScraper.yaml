@@ -3,9 +3,13 @@ on:
   schedule:
     - cron: 0 0 * * *
   push:
+    branches:
+      - master
+  pull_request:
     paths:
-    - scraper/**
-    - main.py
+      - scraper/**
+      - main.py
+      - environment.yml
   workflow_dispatch:
 jobs:
   ClashOfClansScraper:
