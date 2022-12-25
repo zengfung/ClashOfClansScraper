@@ -59,6 +59,10 @@ class LocationTableHandler(StorageHandler):
         LOGGER.info("Converting location data to entities.")
         for location in locations:
             LOGGER.info(f"Converting location data for {try_get_attr(location, 'name')} with ID {try_get_attr(location, 'id')}.")
+            
+            # RowKey is currently set as year-month of scrape. This is to 
+            # ensure that the IDs that represent the same location are
+            # kept constant over time.
             entity = dict()
             entity['PartitionKey'] = f"{try_get_attr(location, 'id')}"
             entity['RowKey'] = f'{datetime.datetime.now().strftime("%Y-%m")}'
@@ -77,10 +81,14 @@ class LocationTableHandler(StorageHandler):
         """
 
         if self.scrape_enabled:
-            LOGGER.info("Scraping location data...")
-            
-            locations = await self.coc_client.search_locations(limit=None)
-            entities = self.__convert_data_to_entity_list__(locations)
-            self.__write_data_to_table__(entities=entities)
+            try:
+                LOGGER.info("Scraping location data...")
                 
-            LOGGER.info("Location data scraped successfully.")
+                locations = await self.coc_client.search_locations(limit=None)
+                entities = self.__convert_data_to_entity_list__(locations)
+                self.__write_data_to_table__(entities=entities)
+                    
+                LOGGER.info("Location data scraped successfully.")
+            except Exception as ex:
+                LOGGER.error("Error occurred while scraping location data.")
+                LOGGER.error(str(ex))
