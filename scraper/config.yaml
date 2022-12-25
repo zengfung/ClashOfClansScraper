@@ -3,7 +3,7 @@ StorageHandlerSettings:
 
 TroopSettings:
   TableName: "Troop"
-  Categories: ["hero", "pet", "troop", "spell"]
+  Categories: ["hero", "pet", "home_troop", "super_troop", "builder_troop", "spell"]
   ScrapeEnabled: true
   NullIdScrapeEnabled: false
 

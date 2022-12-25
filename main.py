@@ -38,7 +38,7 @@ def get_log_level(verbosity:int):
 async def main():
     args = parse_args()
 
-    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(module)s.%(funcName)s - %(message)s', 
+    logging.basicConfig(format='%(levelname)s - %(asctime)s - %(module)s.%(funcName)s Line %(lineno)d : %(message)s', 
                         level=get_log_level(args.verbosity))
 
     logging.info("Calling the Clash of Clans client...")
