@@ -4,7 +4,7 @@ import datetime
 
 from typing import Dict
 from typing import Union
-from typing import Optional
+from typing import List
 from typing import Generator
 from scraper import CONFIG
 from scraper.storage import StorageHandler
@@ -227,6 +227,26 @@ class PlayerTableHandler(StorageHandler):
         # TODO: How to prevent data scraping if data is already present in table?
         entities = await self.__get_data__(player)
         self.__write_data_to_table__(entities=entities)
+
+    def scrape_location_players(self, players: List[coc.players.RankedPlayer]) -> None:
+        """
+        Scrapes the players from the input location.
+
+        Parameters
+        ----------
+        players : List[coc.players.RankedPlayer]
+            The players to scrape.
+        """
+        
+        LOGGER.info(f'Player table {self.table} is updating.')
+        for player in players:
+            try:
+                LOGGER.debug(f'Updating table with {try_get_attr(player, "tag")}\'s data.')
+                entities = self.__convert_data_to_entity_list__(player)
+                self.__write_data_to_table__(entities=entities)
+            except Exception as ex:
+                LOGGER.error(f'Error updating table with {try_get_attr(player, "tag")}\'s data.')
+                LOGGER.error(ex)
 
     async def scrape_clan_members(self, member_tags: Generator[str,None,None]) -> None:
         """

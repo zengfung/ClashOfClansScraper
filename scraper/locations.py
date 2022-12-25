@@ -75,7 +75,7 @@ class LocationTableHandler(StorageHandler):
             LOGGER.info(entity)
             yield entity
 
-    async def update_location_table(self) -> None:
+    async def process_table(self) -> None:
         """
         Updates the location table in the database.
         """
@@ -91,4 +91,38 @@ class LocationTableHandler(StorageHandler):
                 LOGGER.info("Location data scraped successfully.")
             except Exception as ex:
                 LOGGER.error("Error occurred while scraping location data.")
+                LOGGER.error(str(ex))
+
+    async def process_clan_scrape(self) -> None:
+        """
+        Scrapes the clans in the locations specified in the config file.
+        """
+
+        if self.clan_scrape_by_location_enabled:
+            try:
+                LOGGER.info("Scraping clans by location.")
+                for location in self.locations:
+                    LOGGER.info(f"Scraping {self.clan_scrape_limit} clans in {location}.")
+                    clans = await self.coc_client.get_location_clans(location_id=location, limit=self.clan_scrape_limit)
+                    writer = ClanTableHandler(self.coc_client, **self.kwargs)
+                    await writer.scrape_location_clans(clans)
+            except Exception as ex:
+                LOGGER.error("Error occurred while scraping clans by location.")
+                LOGGER.error(str(ex))
+
+    async def process_player_scrape(self) -> None:
+        """
+        Scrapes the players in the locations specified in the config file.
+        """
+
+        if self.player_scrape_by_location_enabled:
+            try:
+                LOGGER.info("Scraping players by location.")
+                for location in self.locations:
+                    LOGGER.info(f"Scraping {self.player_scrape_limit} players in {location}.")
+                    players = await self.coc_client.get_location_players(location_id=location, limit=self.player_scrape_limit)
+                    writer = PlayerTableHandler(self.coc_client, **self.kwargs)
+                    writer.scrape_location_players(players)
+            except Exception as ex:
+                LOGGER.error("Error occurred while scraping players by location.")
                 LOGGER.error(str(ex))

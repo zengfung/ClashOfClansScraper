@@ -63,7 +63,9 @@ async def main():
 
     logging.info("Updating Location Table...")
     writer = LocationTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
-    await writer.update_location_table()
+    await writer.process_table()
+    await writer.process_clan_scrape()
+    await writer.process_player_scrape()
 
     logging.info("Closing the Clash of Clans client...")
     await client.close()

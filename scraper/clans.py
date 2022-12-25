@@ -2,7 +2,10 @@ import logging
 import coc
 import datetime
 
-from typing import Dict, Union, Generator
+from typing import Dict
+from typing import Union
+from typing import Generator
+from typing import List
 from scraper import CONFIG
 from scraper.players import PlayerTableHandler
 from scraper.storage import StorageHandler
@@ -80,8 +83,10 @@ class ClanTableHandler(StorageHandler):
             An iterator of the clan's member tags.
         """
 
-        for member in clan.members:
-            yield member.tag
+        assert isinstance(clan, coc.Clan)
+
+        for member in try_get_attr(clan, 'members'):
+            yield try_get_attr(member, 'tag')
 
     async def __scrape_members_data__(self, clan: coc.Clan) -> None:
         """
@@ -92,6 +97,8 @@ class ClanTableHandler(StorageHandler):
         clan : coc.Clan
             The clan whose member data needs to be scraped.
         """
+
+        assert isinstance(clan, coc.Clan)
 
         scraper = PlayerTableHandler(self.coc_client, **self.kwargs)
         member_tags = self.__get_member_tags__(clan)
@@ -108,10 +115,12 @@ class ClanTableHandler(StorageHandler):
         """
 
         if self.member_scrape_enabled:
-            LOGGER.debug(f'Scraping members data for clan {clan.tag}.')
+            assert isinstance(clan, coc.Clan)
+
+            LOGGER.debug(f'Scraping members data for clan {try_get_attr(clan, "tag")}.')
             await self.__scrape_members_data__(clan)
         else:
-            LOGGER.debug(f'Not scraping members data for clan {clan.tag} because ClanSettings.MemberScrapeEnabled is {self.member_scrape_enabled}.')
+            LOGGER.debug(f'Not scraping members data for clan {try_get_attr(clan, "tag")} because ClanSettings.MemberScrapeEnabled is {self.member_scrape_enabled}.')
 
     def __convert_data_to_entity_list__(self, clan: coc.Clan) -> Generator[Dict[str,Union[float,int,str]],None,None]:
         """
@@ -152,7 +161,7 @@ class ClanTableHandler(StorageHandler):
 
         yield entity
 
-    async def __update_table__(self, clan: coc.Clan) -> None:
+    def __update_table__(self, clan: coc.Clan) -> None:
         """
         Updates the table with the clan's data.
 
@@ -166,6 +175,26 @@ class ClanTableHandler(StorageHandler):
         entities = self.__convert_data_to_entity_list__(clan)
         self.__write_data_to_table__(entities=entities)
 
+    async def scrape_location_clans(self, clans: List[coc.clans.RankedClan]) -> None:
+        """
+        Scrapes the given location's clans.
+
+        Parameters
+        ----------
+        clan_tags : List[RankedClan]
+            The list of ranked clans to scrape.
+        """
+
+        for clan in clans:
+            try:
+                LOGGER.debug(f'Scraping clan {try_get_attr(clan, "tag")}.')
+                clan = await self.coc_client.get_clan(try_get_attr(clan, 'tag')) if not isinstance(clan, coc.Clan) else clan
+                self.__update_table__(clan)
+                await self.__scrape_members_data_if_needed__(clan)
+            except Exception as ex:
+                LOGGER.error(f'Error while scraping clan {try_get_attr(clan, "tag")}: {ex}')
+                LOGGER.error(str(ex))
+
     async def process_table(self) -> None:
         """
         Processes the clan table in the database.
@@ -176,7 +205,7 @@ class ClanTableHandler(StorageHandler):
             async for clan in self.coc_client.get_clans(self.clans):
                 try:
                     LOGGER.debug(f'Updating table with clan {clan} data.')
-                    await self.__update_table__(clan)
+                    self.__update_table__(clan)
                     await self.__scrape_members_data_if_needed__(clan)
                 except Exception as ex:
                     LOGGER.error(f'Unable to update table with clan {clan} data.')
