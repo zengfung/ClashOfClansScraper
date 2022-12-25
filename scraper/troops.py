@@ -48,11 +48,8 @@ class TroopTableHandler(StorageHandler):
     __convert_data_to_entity_list__(data: coc.abc.DataContainer) -> Generator[Dict[str,Union[float,int,str]],None,None]
         Converts the given data to a list of entities to insert/upsert to
         the table.
-    __get_item_data__(func: Callable[[str],coc.abc.DataContainer], category: str) -> Generator[Dict[str,Union[float,int,str]],None,None]
-        Returns a generator of dictionaries containing the data for each
-        entity to be inserted/upserted to the table.
-    __get_function__(category: str) -> Callable[[str],coc.abc.DataContainer]
-        Returns the function used to obtain the data for the given category.
+    __get_item_data__(item: str, category: str) -> coc.abc.DataContainer
+        Gets the data for the given item and category.
     __get_data__(category: str) -> Generator[Dict[str,Union[float,int,str]],None,None]
         Returns a generator of dictionaries containing the data for each
         entity of all items in the category to be inserted/upserted to the table.
@@ -132,7 +129,7 @@ class TroopTableHandler(StorageHandler):
             case "pet":
                 return coc.HERO_PETS_ORDER
             case "troop":
-                return coc.HOME_TROOP_ORDER + coc.BUILDER_TROOPS_ORDER + coc.SUPER_TROOP_ORDER
+                return coc.HOME_TROOP_ORDER + coc.SUPER_TROOP_ORDER
             case "siege_machine":
                 return coc.SIEGE_MACHINE_ORDER         
             case "super_troop":
@@ -233,7 +230,7 @@ class TroopTableHandler(StorageHandler):
             to the table.
         """
 
-        LOGGER.debug(f'Creating entity for {self.__try_get_attr__(data, "name")}.')
+        LOGGER.debug(f'Creating entity for {self.__try_get_attr__(data, "name")} with ID {self.__try_get_attr__(data, "id")}.')
         for i in range(self.__get_entity_count__(data)):
             entity = dict()
             # Mandatory keys
@@ -292,15 +289,52 @@ class TroopTableHandler(StorageHandler):
             
             yield entity
 
-    def __get_item_data__(self, func: Callable[[str],coc.abc.DataContainer], category: str) -> Generator[Dict[str,Union[float,int,str]],None,None]:
+    def __get_item_data__(self, item: str, category: str) -> coc.abc.DataContainer:
+        """
+        Gets the data for the given item and category.
+
+        Parameters
+        ----------
+        item : str
+            The item to get the data for.
+        category : str
+            The category of the item.
+        
+        Returns
+        -------
+        coc.abc.DataContainer
+            The data for the given item and category.
+        """
+
+        match category:
+            case "hero":
+                return self.coc_client.get_hero(item)
+            case "pet":
+                return self.coc_client.get_pet(item)
+            case "troop" | \
+                 "elixir_troop" | \
+                 "dark_elixir_troop" | \
+                 "siege_machine" | \
+                 "super_troop" | \
+                 "home_troop":
+                return self.coc_client.get_troop(item, is_home_village=True)
+            case "builder_troop":
+                return self.coc_client.get_troop(item, is_home_village=False)
+            case "spell" | \
+                 "elixir_spell" | \
+                 "dark_elixir_spell":
+                return self.coc_client.get_spell(item)
+            case _:
+                LOGGER.error(f'{category} is not a valid category.')
+                return None
+
+    def __get_data__(self, category: str) -> Generator[Dict[str,Union[float,int,str]],None,None]:
         """
         Retrieves the data for the given category and converts it to a list
         of entities to insert/upsert to the table.
 
         Parameters
         ----------
-        func : Callable[[str],coc.abc.DataContainer]
-            The function to call to retrieve the data.
         category : str
             The category of the data to retrieve.
 
@@ -313,8 +347,7 @@ class TroopTableHandler(StorageHandler):
 
         items = self.__get_item_list__(category)
         for item in items:
-            # TODO: How to scrape data from builder base?
-            data = func(item)
+            data = self.__get_item_data__(item, category)
 
             if data is None:
                 LOGGER.warning(f'No data found for {item}.')
@@ -333,61 +366,6 @@ class TroopTableHandler(StorageHandler):
             except Exception as ex:
                 LOGGER.error(f'Unable to update table with {item} data from {category} category.')
                 LOGGER.error(str(ex))
-
-    def __get_function__(self, category: str) -> Callable[[str],coc.abc.DataContainer]:
-        """
-        Returns the function to call to retrieve the data for the given category.
-
-        Parameters
-        ----------
-        category : str
-            The category of the data to retrieve.
-
-        Returns
-        -------
-        Callable[[str],coc.abc.DataContainer]
-            The function to call to retrieve the data.
-        """
-
-        match category:
-            case "hero":
-                return self.coc_client.get_hero
-            case "pet":
-                return self.coc_client.get_pet
-            case "troop" | \
-                 "elixir_troop" | \
-                 "dark_elixir_troop" | \
-                 "siege_machine" | \
-                 "super_troop" | \
-                 "home_troop" | \
-                 "builder_troop":
-                return self.coc_client.get_troop
-            case "spell" | \
-                 "elixir_spell" | \
-                 "dark_elixir_spell":
-                return self.coc_client.get_spell
-            case _:
-                LOGGER.error(f'{category} is not a valid category.')
-
-    def __get_data__(self, category: str) -> Generator[Dict[str,Union[float,int,str]],None,None]:
-        """
-        Retrieves the data for the given category and converts it to a list
-        of entities to insert/upsert to the table.
-
-        Parameters
-        ----------
-        category : str
-            The category of the data to retrieve.
-        
-        Yields
-        ------
-        Dict[str,Union[float,int,str]]
-            A dictionary containing the data for an entity to insert/upsert
-            to the table.
-        """
-
-        func = self.__get_function__(category)
-        return self.__get_item_data__(func, category)
 
     def __update_table__(self, category: str) -> None:
         """
