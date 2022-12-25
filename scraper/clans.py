@@ -6,6 +6,7 @@ from typing import Dict, Union, Generator
 from scraper import CONFIG
 from scraper.players import PlayerTableHandler
 from scraper.storage import StorageHandler
+from scraper.utils import try_get_attr
 
 LOGGER = logging.getLogger(__name__)
 
@@ -129,24 +130,25 @@ class ClanTableHandler(StorageHandler):
         """
 
         entity = dict()
-        entity['PartitionKey'] = clan.tag.lstrip('#')
+
+        entity['PartitionKey'] = try_get_attr(clan, 'tag').lstrip('#')
         entity['RowKey'] = datetime.datetime.now().strftime('%Y-%m-%d')
-        entity['Name'] = clan.name
-        entity['Tag'] = clan.tag
-        entity['Level'] = clan.level
-        entity['Type'] = clan.type
-        entity['Description'] = clan.description
-        entity['Location'] = clan.location.id
-        entity['Points'] = clan.points
-        entity['VersusPoints'] = clan.versus_points
-        entity['RequiredTrophies'] = clan.required_trophies
-        entity['WarFrequency'] = clan.war_frequency
-        entity['WarWinStreak'] = clan.war_win_streak
-        entity['WarWins'] = clan.war_wins
-        entity['WarTies'] = clan.war_ties
-        entity['WarLosses'] = clan.war_losses
-        entity['IsWarLogPublic'] = clan.public_war_log
-        entity['MemberCount'] = clan.member_count
+        entity['Name'] = try_get_attr(clan, 'name')
+        entity['Tag'] = try_get_attr(clan, 'tag')
+        entity['Level'] = try_get_attr(clan, 'level')
+        entity['Type'] = try_get_attr(clan, 'type')
+        entity['Description'] = try_get_attr(clan, 'description')
+        entity['Location'] = try_get_attr(clan.location, 'id') if hasattr(clan, 'location') else None
+        entity['Points'] = try_get_attr(clan, 'points')
+        entity['VersusPoints'] = try_get_attr(clan, 'versus_points')
+        entity['RequiredTrophies'] = try_get_attr(clan, 'required_trophies')
+        entity['WarFrequency'] = try_get_attr(clan, 'war_frequency')
+        entity['WarWinStreak'] = try_get_attr(clan, 'war_win_streak')
+        entity['WarWins'] = try_get_attr(clan, 'war_wins')
+        entity['WarTies'] = try_get_attr(clan, 'war_ties')
+        entity['WarLosses'] = try_get_attr(clan, 'war_losses')
+        entity['IsWarLogPublic'] = try_get_attr(clan, 'is_war_log_public')
+        entity['MemberCount'] = try_get_attr(clan, 'member_count')
 
         yield entity
 
