@@ -10,6 +10,7 @@ from typing import Generator
 from typing import Union
 from scraper import CONFIG
 from scraper.storage import StorageHandler
+from scraper.utils import try_get_attr
 
 LOGGER = logging.getLogger(__name__)
 
@@ -172,47 +173,6 @@ class TroopTableHandler(StorageHandler):
                 count = max(count, len(a))
         return count
 
-    def __try_get_attr__(self, 
-                         data: coc.abc.DataContainer, 
-                         attr: str, 
-                         index: int = None,
-                         default: Any = None) -> Union[float,int,str]:
-        """
-        Returns the value of the given attribute for the given data if the
-        attribute exists. Otherwise, returns None.
-
-        Parameters
-        ----------
-        data : coc.abc.DataContainer
-            The data to get the attribute from.
-        attr : str
-            The attribute to get.
-        index : int, optional
-            The index of the attribute to get if the attribute is a list.
-
-        Returns
-        -------
-        Union[float,int,str]
-            The value of the attribute if it exists. Otherwise, returns None.
-        """
-
-        out = getattr(data, attr, default)
-
-        if out is None:
-            return default
-
-        if isinstance(out, list) and len(out) == 0:
-            return default
-
-        if index is not None:
-            try:
-                return out[index]
-            except IndexError as ex:
-                LOGGER.error(f'IndexError obtained at {attr}.')
-                LOGGER.error(str(ex))
-                return default
-        return out
-
     def __convert_data_to_entity_list__(self, data: coc.abc.DataContainer) -> Generator[Dict[str,Union[float,int,str]],None,None]:
         """
         Converts the given data to a list of entities to insert/upsert to
@@ -230,61 +190,61 @@ class TroopTableHandler(StorageHandler):
             to the table.
         """
 
-        LOGGER.debug(f'Creating entity for {self.__try_get_attr__(data, "name")} with ID {self.__try_get_attr__(data, "id")}.')
+        LOGGER.debug(f'Creating entity for {try_get_attr(data, "name")} with ID {try_get_attr(data, "id")}.')
         for i in range(self.__get_entity_count__(data)):
             entity = dict()
             # Mandatory keys
             # TODO: How to deal with hero pet scenario where there is no id?
-            entity['PartitionKey'] = f'{self.__try_get_attr__(data, "id")}_{self.__try_get_attr__(data, "level", i+1, default=i+1)}'
+            entity['PartitionKey'] = f'{try_get_attr(data, "id")}_{try_get_attr(data, "level", i+1, default=i+1)}'
             entity['RowKey'] = f'{datetime.datetime.now().strftime("%Y-%m")}'
 
             # Identity keys
             entity['SeasonId'] = datetime.datetime.now().strftime('%Y-%m')
-            entity['Id'] = self.__try_get_attr__(data, "id")
-            entity['Name'] = self.__try_get_attr__(data, "name")
+            entity['Id'] = try_get_attr(data, "id")
+            entity['Name'] = try_get_attr(data, "name")
 
             # Details
-            lab_level = self.__try_get_attr__(data, "lab_level", i+1)
-            townhall_level = self.__try_get_attr__(data, "lab_to_townhall", lab_level) if lab_level is not None else None
-            upgrade_time = self.__try_get_attr__(data, "upgrade_time", i+1)
-            entity['Range'] = self.__try_get_attr__(data, "range", i+1)
-            entity['Dps'] = self.__try_get_attr__(data, "dps", i+1)
-            entity['GroundTarget'] = self.__try_get_attr__(data, "ground_target")
-            entity['Hitpoints'] = self.__try_get_attr__(data, "hitpoints", i+1)
-            entity['HousingSpace'] = self.__try_get_attr__(data, "housing_space")
-            entity['LabLevel'] = self.__try_get_attr__(data, "lab_level", i+1)
+            lab_level = try_get_attr(data, "lab_level", i+1)
+            townhall_level = try_get_attr(data, "lab_to_townhall", lab_level) if lab_level is not None else None
+            upgrade_time = try_get_attr(data, "upgrade_time", i+1)
+            entity['Range'] = try_get_attr(data, "range", i+1)
+            entity['Dps'] = try_get_attr(data, "dps", i+1)
+            entity['GroundTarget'] = try_get_attr(data, "ground_target")
+            entity['Hitpoints'] = try_get_attr(data, "hitpoints", i+1)
+            entity['HousingSpace'] = try_get_attr(data, "housing_space")
+            entity['LabLevel'] = try_get_attr(data, "lab_level", i+1)
             entity['TownhallLevel'] = townhall_level
-            entity['Speed'] = self.__try_get_attr__(data, "speed", i+1)
-            entity['Level'] = self.__try_get_attr__(data, "level", i+1, default=i+1)
-            entity['UpgradeCost'] = self.__try_get_attr__(data, "upgrade_cost", i+1)
-            entity['UpgradeResource'] = self.__try_get_attr__(data, "upgrade_resource").name
+            entity['Speed'] = try_get_attr(data, "speed", i+1)
+            entity['Level'] = try_get_attr(data, "level", i+1, default=i+1)
+            entity['UpgradeCost'] = try_get_attr(data, "upgrade_cost", i+1)
+            entity['UpgradeResource'] = try_get_attr(data, "upgrade_resource").name
             entity['UpgradeTime'] = upgrade_time.total_seconds() if upgrade_time is not None else None
-            entity['IsHomeVillage'] = self.__try_get_attr__(data, "_is_home_village")
+            entity['IsHomeVillage'] = try_get_attr(data, "_is_home_village")
 
             # Spells and troops
             # Note: Cooldown and Duration only applies to super troops, and 
             # is always a list of 1 item.
-            cooldown = self.__try_get_attr__(data, "cooldown", 1)
-            duration = self.__try_get_attr__(data, "duration", 1)
-            original_troop = self.__try_get_attr__(data, "original_troop")
-            entity['TrainingCost'] = self.__try_get_attr__(data, "training_cost", i+1)
-            entity['TrainingTime'] = self.__try_get_attr__(data, "training_time", i+1)
-            entity['IsElixirSpell'] = self.__try_get_attr__(data, "is_elixir_spell")
-            entity['IsDarkSpell'] = self.__try_get_attr__(data, "is_dark_spell")
-            entity['IsElixirTroop'] = self.__try_get_attr__(data, "is_elixir_troop")
-            entity['IsDarkTroop'] = self.__try_get_attr__(data, "is_dark_troop")
-            entity['IsSiegeMachine'] = self.__try_get_attr__(data, "is_siege_machine")
-            entity['IsSuperTroop'] = self.__try_get_attr__(data, "is_super_troop")
+            cooldown = try_get_attr(data, "cooldown", 1)
+            duration = try_get_attr(data, "duration", 1)
+            original_troop = try_get_attr(data, "original_troop")
+            entity['TrainingCost'] = try_get_attr(data, "training_cost", i+1)
+            entity['TrainingTime'] = try_get_attr(data, "training_time", i+1)
+            entity['IsElixirSpell'] = try_get_attr(data, "is_elixir_spell")
+            entity['IsDarkSpell'] = try_get_attr(data, "is_dark_spell")
+            entity['IsElixirTroop'] = try_get_attr(data, "is_elixir_troop")
+            entity['IsDarkTroop'] = try_get_attr(data, "is_dark_troop")
+            entity['IsSiegeMachine'] = try_get_attr(data, "is_siege_machine")
+            entity['IsSuperTroop'] = try_get_attr(data, "is_super_troop")
             entity['Cooldown'] = cooldown.total_seconds() if cooldown is not None else None
             entity['Duration'] = duration.total_seconds() if duration is not None else None
-            entity['MinOriginalLevel'] = self.__try_get_attr__(data, "min_original_level")
-            entity['OriginalTroopId'] = self.__try_get_attr__(original_troop, "id") if original_troop is not None else None
+            entity['MinOriginalLevel'] = try_get_attr(data, "min_original_level")
+            entity['OriginalTroopId'] = try_get_attr(original_troop, "id") if original_troop is not None else None
 
             # Heroes and pets
-            regeneration_time = self.__try_get_attr__(data, "regeneration_time", i+1)
-            entity['AbilityTime'] = self.__try_get_attr__(data, "ability_time", i+1)
-            entity['AbilityTroopCount'] = self.__try_get_attr__(data, "ability_troop_count", i+1)
-            entity['RequiredTownhallLevel'] = self.__try_get_attr__(data, "required_th_level", i+1)
+            regeneration_time = try_get_attr(data, "regeneration_time", i+1)
+            entity['AbilityTime'] = try_get_attr(data, "ability_time", i+1)
+            entity['AbilityTroopCount'] = try_get_attr(data, "ability_troop_count", i+1)
+            entity['RequiredTownhallLevel'] = try_get_attr(data, "required_th_level", i+1)
             entity['RegenerationTime'] = regeneration_time.total_seconds() if regeneration_time is not None else None
             
             yield entity
@@ -354,7 +314,7 @@ class TroopTableHandler(StorageHandler):
                 LOGGER.warning(f'{item} data from {category} category is not scrape-able.')
                 continue
 
-            if self.__try_get_attr__(data, 'id') is None and \
+            if try_get_attr(data, 'id') is None and \
                not self.null_id_scrape_enabled:
                 LOGGER.warning(f'No ID found for {item} and null_id_scrape_enabled is set to {self.null_id_scrape_enabled}.')
                 LOGGER.warning(f'{item} data from {category} category is not scrape-able.')
