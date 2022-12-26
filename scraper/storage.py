@@ -4,6 +4,7 @@ from scraper import CONFIG
 from typing import Dict
 from typing import Union
 from azure.core.exceptions import ResourceExistsError
+from azure.core.exceptions import ClientAuthenticationError
 from azure.core.credentials import AzureNamedKeyCredential
 from azure.data.tables import TableServiceClient
 from azure.data.tables import TableClient
@@ -59,6 +60,11 @@ class StorageHandler(object):
             (Default: None) The connection string of the Azure Table Storage.
         """
 
+        self.table_name = table_name
+        self.account_name = account_name
+        self.access_key = access_key
+        self.connection_string = connection_string
+
         self.service_table_client = self.__connect_table_service_client__(account_name=account_name, access_key=access_key, connection_string=connection_string)
         self.table_client = self.__connect_table_client__(table_name)
 
@@ -95,7 +101,7 @@ class StorageHandler(object):
                 LOGGER.info('Attempting connection via connection string.')
                 return TableServiceClient.from_connection_string(conn_str=connection_string)
             except:
-                LOGGER.info('Connection attempt via connection string failed.')
+                LOGGER.error('Connection attempt via connection string failed.')
         
         if (account_name is not None and access_key is not None):
             try:
@@ -103,7 +109,7 @@ class StorageHandler(object):
                 credential = AzureNamedKeyCredential(account_name, access_key)
                 return TableServiceClient(endpoint=f'https://{account_name}.table.core.windows.net/', credential=credential)
             except:
-                LOGGER.info('Connection attempt via account name and access key failed.')
+                LOGGER.error('Connection attempt via account name and access key failed.')
 
     def __connect_table_client__(self, name:str) -> TableClient:
         """
@@ -121,8 +127,12 @@ class StorageHandler(object):
             The TableClient object connected to the table in Azure Table Storage.
         """
 
-        LOGGER.info(f'Connecting to table client {name}')
-        return self.service_table_client.create_table_if_not_exists(table_name=name)
+        try:
+            LOGGER.info(f'Connecting to table client {name}')
+            return self.service_table_client.create_table_if_not_exists(table_name=name)
+        except Exception as ex:
+            LOGGER.error(f'Failed to connect to table client {name}.')
+            LOGGER.error(str(ex))
 
     def __write_data_to_table__(self, entities: Dict[str,Union[float,int,str]]) -> None:
         """
@@ -150,5 +160,10 @@ class StorageHandler(object):
                     except Exception as ex:
                         LOGGER.error('Failed to upsert entity.')
                         LOGGER.error(str(ex))
+            except ClientAuthenticationError:
+                LOGGER.error('Client authentication error encountered, attempting login retry.')
+                self.service_table_client = self.__connect_table_service_client__(account_name=self.account_name, access_key=self.access_key, connection_string=self.connection_string)
+                self.table_client = self.__connect_table_client__(self.table_name)
+
         LOGGER.debug('Sent all entities to table.')
     
