@@ -45,5 +45,5 @@ LocationSettings:
   Locations: [32000144, 32000209]
   ClanScrapeByLocationEnabled: true
   ClanScrapeLimit: 10
-  PlayerScrapeByLocationEnabled: false
+  PlayerScrapeByLocationEnabled: true
   PlayerScrapeLimit: 10
