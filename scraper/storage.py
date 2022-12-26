@@ -1,8 +1,11 @@
 import logging
+import coc
 
 from scraper import CONFIG
 from typing import Dict
 from typing import Union
+from typing import Optional
+from collections.abc import Iterable
 from azure.core.exceptions import ResourceExistsError
 from azure.core.exceptions import HttpResponseError
 from azure.core.exceptions import ClientAuthenticationError
@@ -44,11 +47,14 @@ class StorageHandler(object):
     configs = CONFIG['StorageHandlerSettings']
     upsert_enabled = configs['UpsertAtFailedPushEnabled']
 
-    def __init__(self,
-                 table_name: str, 
-                 account_name: str = None, 
-                 access_key: str = None, 
-                 connection_string: str = None) -> None:
+    def __init__(
+            self,
+            table_name: str,
+            coc_email: str,
+            coc_password: str,
+            account_name: str = None, 
+            access_key: str = None, 
+            connection_string: str = None) -> None:
         """
         Parameters
         ----------
@@ -62,6 +68,13 @@ class StorageHandler(object):
             (Default: None) The connection string of the Azure Table Storage.
         """
 
+        # Clash of Clans API Client
+        self.coc_email = coc_email
+        self.coc_password = coc_password
+        # Need to manually start coc_client session
+        self.coc_client = None  
+
+        # Azure Table Storage Client
         self.table_name = table_name
         self.account_name = account_name
         self.access_key = access_key
@@ -136,13 +149,52 @@ class StorageHandler(object):
             LOGGER.error(f'Failed to connect to table client {name}.')
             LOGGER.error(str(ex))
 
-    def write_data_to_table(self, entities: Dict[str,Union[float,int,str]]) -> None:
+    async def __restart_coc_client_session__(self) -> None:
+        """
+        Restarts the Clash of Clans API client session.
+        """
+
+        LOGGER.debug('Restarting Clash of Clans API client session.')
+        await self.close_coc_client_session()
+        await self.start_coc_client_session()
+
+    async def start_coc_client_session(self) -> None:
+        """
+        Starts a Clash of Clans API client session.
+        """
+
+        if self.coc_client is not None:
+            LOGGER.warning('Clash of Clans API client session already running.')
+            return
+
+        try:
+            LOGGER.debug('Starting Clash of Clans API client session.')
+            self.coc_client = coc.Client(load_game_data=coc.LoadGameData(default=True))
+            await self.coc_client.login(email=self.coc_email, password=self.coc_password)
+        except Exception as ex:
+            LOGGER.error('Failed to start Clash of Clans API client session.')
+            LOGGER.error(str(ex))
+
+    async def close_coc_client_session(self) -> None:
+        """
+        Closes the Clash of Clans API client session.
+        """
+
+        if self.coc_client is None:
+            LOGGER.warning('Clash of Clans API client session already closed.')
+            return
+
+        LOGGER.debug('Closing Clash of Clans API client session.')
+        await self.coc_client.close()
+        self.coc_client = None 
+
+    def write_data_to_table(self, entities: Iterable[Dict[str,Union[float,int,str]]]) -> None:
         """
         Writes the given entities to the table in Azure Table Storage.
 
         Parameters
         ----------
-        entities : Dict[str,Union[float,int,str]]
+        entities : Generator[Dict[str,Union[float,int,str]],None,None]
             The entities to be written to the table in Azure Table Storage.
         """
         
