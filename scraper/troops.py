@@ -190,7 +190,7 @@ class TroopTableHandler(StorageHandler):
             to the table.
         """
 
-        LOGGER.debug(f'Creating entity for {self.__try_get_attr__(data, "name")} with ID {self.__try_get_attr__(data, "id")}.')
+        LOGGER.debug(f'Creating entity for {try_get_attr(data, "name")} with ID {try_get_attr(data, "id")}.')
         for i in range(self.__get_entity_count__(data)):
             entity = dict()
             # Mandatory keys
@@ -314,7 +314,7 @@ class TroopTableHandler(StorageHandler):
                 LOGGER.warning(f'{item} data from {category} category is not scrape-able.')
                 continue
 
-            if self.__try_get_attr__(data, 'id') is None and \
+            if try_get_attr(data, 'id') is None and \
                not self.null_id_scrape_enabled:
                 LOGGER.warning(f'No ID found for {item} and null_id_scrape_enabled is set to {self.null_id_scrape_enabled}.')
                 LOGGER.warning(f'{item} data from {category} category is not scrape-able.')
