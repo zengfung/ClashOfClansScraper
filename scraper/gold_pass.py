@@ -37,11 +37,10 @@ class GoldPassTableHandler(StorageHandler):
     """
 
     configs = CONFIG['GoldPassSettings']
-    table = configs['TableName']
     scrape_enabled = configs['ScrapeEnabled']
     abandon_scrape_if_entity_exists = configs['AbandonScrapeIfEntityExists']
 
-    def __init__(self, coc_client: coc.Client, **kwargs) -> None:
+    def __init__(self, **kwargs) -> None:
         """
         Parameters
         ----------
@@ -49,8 +48,7 @@ class GoldPassTableHandler(StorageHandler):
             The client used to access the Clash of Clans API.
         """
 
-        super().__init__(self.table, **kwargs)
-        self.coc_client = coc_client
+        super().__init__(table_name=self.configs['TableName'], **kwargs)
 
     def __does_entity_exist__(self) -> bool:
         """
@@ -62,7 +60,7 @@ class GoldPassTableHandler(StorageHandler):
             True if the entity exists in the table, otherwise False.
         """
 
-        LOGGER.debug(f'Checking if entity exists in table {self.table}.')
+        LOGGER.debug(f'Checking if entity exists in table {self.table_name}.')
         partition_key = self.__get_partition_key__()
         row_key = self.__get_row_key__()
         entity = self.try_get_entity(partition_key, row_key, select='PartitionKey')
@@ -141,7 +139,7 @@ class GoldPassTableHandler(StorageHandler):
 
         should_abandon_scrape = self.abandon_scrape_if_entity_exists and self.__does_entity_exist__()
         if should_abandon_scrape:
-            LOGGER.info(f'Abandoning scrape because entity exists in table {self.table} and GoldPassSettings.AbandonScrapeIfEntityExists is {self.abandon_scrape_if_entity_exists}.')
+            LOGGER.info(f'Abandoning scrape because entity exists in table {self.table_name} and GoldPassSettings.AbandonScrapeIfEntityExists is {self.abandon_scrape_if_entity_exists}.')
             return None
 
         LOGGER.debug('Scraping Gold Pass data.')
@@ -149,17 +147,23 @@ class GoldPassTableHandler(StorageHandler):
         entities = self.__convert_data_to_entity_list__(data)
         self.write_data_to_table(entities=entities)
 
-    async def process_table(self) -> None:
+    async def process_table(self, coc_client_handling: bool = True) -> None:
         """
         Public API to update the table with the current Gold Pass Season data.
         """
+
+        if coc_client_handling:
+            await self.start_coc_client_session()
         
         if self.scrape_enabled:
             try:
-                LOGGER.info(f'Gold Pass table {self.table} is updating.')
+                LOGGER.info(f'Gold Pass table {self.table_name} is updating.')
                 await self.__update_table__()
             except Exception as ex:
                 LOGGER.error(f'Unable to update table with Gold Pass Season data.')
                 LOGGER.error(str(ex))
         else:
-            LOGGER.info(f'Gold Pass table {self.table} is not updated because GoldPassSettings.ScrapeEnabled is {self.scrape_enabled}.')
+            LOGGER.info(f'Gold Pass table {self.table_name} is not updated because GoldPassSettings.ScrapeEnabled is {self.scrape_enabled}.')
+
+        if coc_client_handling:
+            await self.close_coc_client_session()
