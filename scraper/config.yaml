@@ -5,15 +5,18 @@ TroopSettings:
   TableName: "Troop"
   Categories: ["hero", "pet", "home_troop", "super_troop", "builder_troop", "spell"]
   ScrapeEnabled: true
+  AbandonScrapeIfEntityExists: true
   NullIdScrapeEnabled: false
 
 GoldPassSettings:
   TableName: "GoldPass"
   ScrapeEnabled: true
+  AbandonScrapeIfEntityExists: true
 
 PlayerSettings:
   TableName: "Player"
   ScrapeEnabled: true
+  AbandonScrapeIfEntityExists: true
   # Player data to be scraped.
   #   zoecmy: #QPPLYYJGY
   Players: ["#QPPLYYJGY"]
@@ -21,6 +24,7 @@ PlayerSettings:
 ClanSettings:
   TableName: "Clan"
   ScrapeEnabled: true
+  AbandonScrapeIfEntityExists: true
   # Clan data to be scraped.
   #   ATAS: #9J82VUV
   #     includes:

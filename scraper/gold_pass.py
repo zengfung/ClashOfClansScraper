@@ -39,6 +39,7 @@ class GoldPassTableHandler(StorageHandler):
     configs = CONFIG['GoldPassSettings']
     table = configs['TableName']
     scrape_enabled = configs['ScrapeEnabled']
+    abandon_scrape_if_entity_exists = configs['AbandonScrapeIfEntityExists']
 
     def __init__(self, coc_client: coc.Client, **kwargs) -> None:
         """
@@ -50,6 +51,22 @@ class GoldPassTableHandler(StorageHandler):
 
         super().__init__(self.table, **kwargs)
         self.coc_client = coc_client
+
+    def __does_entity_exist__(self) -> bool:
+        """
+        Determines if the entity exists in the table.
+
+        Returns
+        -------
+        bool
+            True if the entity exists in the table, otherwise False.
+        """
+
+        LOGGER.debug(f'Checking if entity exists in table {self.table}.')
+        partition_key = self.__get_partition_key__()
+        row_key = self.__get_row_key__()
+        entity = self.try_get_entity(partition_key, row_key, select='PartitionKey')
+        return entity is not None
 
     def __convert_timedelta_to_days__(self, dt: datetime.timedelta) -> float:
         """
@@ -68,6 +85,30 @@ class GoldPassTableHandler(StorageHandler):
 
         return dt / datetime.timedelta(days=1)
 
+    def __get_partition_key__(self) -> str:
+        """
+        Gets the partition key for the current month, i.e. the current year.
+
+        Returns
+        -------
+        str
+            The partition key for the current month.
+        """
+
+        return datetime.datetime.now().strftime('%Y')
+
+    def __get_row_key__(self) -> str:
+        """
+        Gets the row key for the current month, i.e. the current month.
+
+        Returns
+        -------
+        str
+            The row key for the current month.
+        """
+
+        return datetime.datetime.now().strftime('%m')
+
     def __convert_data_to_entity_list__(self, data: coc.miscmodels.GoldPassSeason) -> Generator[Dict[str,Union[float,int,str]],None,None]:
         """
         Converts the given data to an enumerable of entities.
@@ -85,8 +126,8 @@ class GoldPassTableHandler(StorageHandler):
 
         LOGGER.debug(f'Creating entity for Gold Pass Season.')
         entity = dict()
-        entity['PartitionKey'] = datetime.datetime.now().strftime('%Y')
-        entity['RowKey'] = datetime.datetime.now().strftime('%m')
+        entity['PartitionKey'] = self.__get_partition_key__()
+        entity['RowKey'] = self.__get_row_key__()
         entity['SeasonId'] = datetime.datetime.now().strftime('%Y-%m')
         entity['StartTime'] = data.start_time.time
         entity['EndTime'] = data.end_time.time
@@ -98,11 +139,15 @@ class GoldPassTableHandler(StorageHandler):
         Scrape and update the table with the current Gold Pass Season data.
         """
 
-        # TODO: How to prevent data scraping if data is already present in table?
+        should_abandon_scrape = self.abandon_scrape_if_entity_exists and self.__does_entity_exist__()
+        if should_abandon_scrape:
+            LOGGER.info(f'Abandoning scrape because entity exists in table {self.table} and GoldPassSettings.AbandonScrapeIfEntityExists is {self.abandon_scrape_if_entity_exists}.')
+            return None
+
         LOGGER.debug('Scraping Gold Pass data.')
         data = await self.coc_client.get_current_goldpass_season()
         entities = self.__convert_data_to_entity_list__(data)
-        self.__write_data_to_table__(entities=entities)
+        self.write_data_to_table(entities=entities)
 
     async def process_table(self) -> None:
         """

@@ -162,7 +162,7 @@ class ClanTableHandler(StorageHandler):
 
         # TODO: How to prevent data scraping if data is already present in the table?
         entities = self.__convert_data_to_entity_list__(clan)
-        self.__write_data_to_table__(entities=entities)
+        self.write_data_to_table(entities=entities)
 
     async def process_table(self) -> None:
         """

@@ -4,10 +4,12 @@ from scraper import CONFIG
 from typing import Dict
 from typing import Union
 from azure.core.exceptions import ResourceExistsError
+from azure.core.exceptions import HttpResponseError
 from azure.core.exceptions import ClientAuthenticationError
 from azure.core.credentials import AzureNamedKeyCredential
 from azure.data.tables import TableServiceClient
 from azure.data.tables import TableClient
+from azure.data.tables import TableEntity
 
 LOGGER = logging.getLogger(__name__)
 
@@ -35,7 +37,7 @@ class StorageHandler(object):
     __connect_table_client__(name: str) -> azure.data.tables.TableClient
         Connects to the TableClient object in Azure Table Storage based on
         the given table name.
-    __write_data_to_table__(entities: Dict[str,Union[float,int,str]]) -> None
+    write_data_to_table(entities: Dict[str,Union[float,int,str]]) -> None
         Writes the given entities to the table in Azure Table Storage.
     """
 
@@ -134,7 +136,7 @@ class StorageHandler(object):
             LOGGER.error(f'Failed to connect to table client {name}.')
             LOGGER.error(str(ex))
 
-    def __write_data_to_table__(self, entities: Dict[str,Union[float,int,str]]) -> None:
+    def write_data_to_table(self, entities: Dict[str,Union[float,int,str]]) -> None:
         """
         Writes the given entities to the table in Azure Table Storage.
 
@@ -166,4 +168,29 @@ class StorageHandler(object):
                 self.table_client = self.__connect_table_client__(self.table_name)
 
         LOGGER.debug('Sent all entities to table.')
+
+    def try_get_entity(self, partition_key, row_key, **kwargs) -> TableEntity:
+        """
+        Attempts to get the entity with the given partition key and row key.
+
+        Parameters
+        ----------
+        partition_key : str
+            The partition key of the entity to be retrieved.
+        row_key : str
+            The row key of the entity to be retrieved.
+
+        Returns
+        -------
+        TableEntity
+            The entity with the given partition key and row key.
+        """
+
+        try:
+            LOGGER.debug(f'Attempting to get entity with partition key {partition_key} and row key {row_key}.')
+            return self.table_client.get_entity(partition_key=partition_key, row_key=row_key, **kwargs)
+        except HttpResponseError as ex:
+            LOGGER.error(f'Entity with partition key {partition_key} and row key {row_key} not found.')
+            LOGGER.error(str(ex))
+            return None
     

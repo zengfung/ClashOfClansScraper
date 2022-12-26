@@ -255,7 +255,7 @@ class PlayerTableHandler(StorageHandler):
 
         # TODO: How to prevent data scraping if data is already present in table?
         entities = await self.__get_data__(player)
-        self.__write_data_to_table__(entities=entities)
+        self.write_data_to_table(entities=entities)
 
     async def scrape_clan_members(self, member_tags: Generator[str,None,None]) -> None:
         """
