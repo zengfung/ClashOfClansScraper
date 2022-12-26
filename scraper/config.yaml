@@ -35,3 +35,15 @@ ClanSettings:
   #       - #YG2V9YPUP: zWyeBroken
   Clans: ["#9J82VUV", "#2RQ2VR89"]
   MemberScrapeEnabled: true
+
+LocationSettings:
+  TableName: "Location"
+  ScrapeEnabled: true
+  # Location data to be scraped.
+  #   1: 32000144
+  #   2: 32000209
+  Locations: [32000144, 32000209]
+  ClanScrapeByLocationEnabled: true
+  ClanScrapeLimit: 10
+  PlayerScrapeByLocationEnabled: false
+  PlayerScrapeLimit: 10

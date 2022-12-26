@@ -6,6 +6,7 @@ from scraper.gold_pass import GoldPassTableHandler
 from scraper.troops import TroopTableHandler
 from scraper.players import PlayerTableHandler
 from scraper.clans import ClanTableHandler
+from scraper.locations import LocationTableHandler
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -59,6 +60,12 @@ async def main():
     logging.info("Updating Clan Table...")
     writer = ClanTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
     await writer.process_table()
+
+    logging.info("Updating Location Table...")
+    writer = LocationTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
+    await writer.process_table()
+    await writer.process_clan_scrape()
+    await writer.process_player_scrape()
 
     logging.info("Closing the Clash of Clans client...")
     await client.close()
