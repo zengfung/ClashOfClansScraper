@@ -1,4 +1,8 @@
 StorageHandlerSettings:
+  RetryEntityCreationEnabled: true
+  RetryEntityCreationCount: 1
+  RetryEntityExtractionEnabled: true
+  RetryEntityExtractionCount: 1
   UpsertAtFailedPushEnabled: true
 
 TroopSettings:
