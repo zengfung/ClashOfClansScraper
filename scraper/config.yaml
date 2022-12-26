@@ -42,4 +42,4 @@ LocationSettings:
   ClanScrapeByLocationEnabled: true
   ClanScrapeLimit: 10
   PlayerScrapeByLocationEnabled: false
-  PlayerScrapeLimit: 1
+  PlayerScrapeLimit: 10

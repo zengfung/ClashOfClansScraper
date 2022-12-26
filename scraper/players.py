@@ -228,7 +228,7 @@ class PlayerTableHandler(StorageHandler):
         entities = await self.__get_data__(player)
         self.__write_data_to_table__(entities=entities)
 
-    def scrape_location_players(self, players: List[coc.players.RankedPlayer]) -> None:
+    async def scrape_location_players(self, players: List[coc.players.RankedPlayer]) -> None:
         """
         Scrapes the players from the input location.
 
@@ -242,8 +242,7 @@ class PlayerTableHandler(StorageHandler):
         for player in players:
             try:
                 LOGGER.debug(f'Updating table with {try_get_attr(player, "tag")}\'s data.')
-                entities = self.__convert_data_to_entity_list__(player)
-                self.__write_data_to_table__(entities=entities)
+                await self.__update_table__(player=try_get_attr(player, 'tag'))
             except Exception as ex:
                 LOGGER.error(f'Error updating table with {try_get_attr(player, "tag")}\'s data.')
                 LOGGER.error(ex)
