@@ -1,6 +1,5 @@
 import argparse
 import asyncio
-import coc
 import logging
 from scraper.gold_pass import GoldPassTableHandler
 from scraper.troops import TroopTableHandler
@@ -41,13 +40,21 @@ async def main():
     logging.basicConfig(format='%(levelname)s - %(asctime)s - %(module)s.%(funcName)s Line %(lineno)d : %(message)s', 
                         level=get_log_level(args.verbosity))
 
+    login_kwargs = {
+        'coc_email': args.email,
+        'coc_password': args.password,
+        'account_name': args.name,
+        'access_key': args.access_key,
+        'connection_string': args.connection_string
+    }
+
     logging.info("Updating Gold Pass Season Table...")
-    writer = GoldPassTableHandler(coc_email=args.email, coc_password=args.password, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
+    writer = GoldPassTableHandler(**login_kwargs)
     await writer.process_table()
 
-    # logging.info("Updating Troop Table...")
-    # writer = TroopTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
-    # writer.process_table()
+    logging.info("Updating Troop Table...")
+    writer = TroopTableHandler(**login_kwargs)
+    await writer.process_table()
 
     # logging.info("Updating Player Table...")
     # writer = PlayerTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)

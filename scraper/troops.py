@@ -2,15 +2,11 @@ import logging
 import coc
 import datetime
 
-from typing import Any
-from typing import List
-from typing import Callable
-from typing import Dict
-from typing import Generator
-from typing import Union
+from collections.abc import Iterator
 from scraper import CONFIG
 from scraper.storage import StorageHandler
 from scraper.utils import try_get_attr
+from azure.data.tables import TableEntity
 
 LOGGER = logging.getLogger(__name__)
 
@@ -22,63 +18,41 @@ class TroopTableHandler(StorageHandler):
 
     Attributes
     ----------
-    coc_client : coc.Client
-        The client used to access the Clash of Clans API.
-    table : str
-        The name of the table to be updated.
-    categories : List[str]
+    categories : list[str]
         The categories of troops to scrape.
     scrape_enabled : bool
         Determines if data scraping should be performed.
     null_id_scrape_enabled : bool
         Determines if data scraping should be performed for items with a 
         null id.
+    abandon_scrape_if_entity_exists : bool
+        Determines if the scrape should be abandoned if the entity exists in
+        the table.
     
     Methods
     -------
-    __is_valid_category__(category: str) -> bool
-        Determines if the given category is valid.
-    __get_item_list__(category: str) -> List[str]
-        Returns the list of items for the given category.
-    __get_entity_count__(data: coc.abc.DataContainer) -> int
-        Returns the number of entities to insert/upsert to the table for a 
-        particular item.
-    __try_get_attr__(data: coc.abc.DataContainer, attr: str, index: int = None) -> Union[float,int,str]
-        Returns the value of the given attribute for the given data if the 
-        attribute exists. Otherwise, returns None.
-    __convert_data_to_entity_list__(data: coc.abc.DataContainer) -> Generator[Dict[str,Union[float,int,str]],None,None]
-        Converts the given data to a list of entities to insert/upsert to
-        the table.
-    __get_item_data__(item: str, category: str) -> coc.abc.DataContainer
-        Gets the data for the given item and category.
-    __get_data__(category: str) -> Generator[Dict[str,Union[float,int,str]],None,None]
-        Returns a generator of dictionaries containing the data for each
-        entity of all items in the category to be inserted/upserted to the table.
-    __update_table__(category: str) -> None
-        Updates the table for the given category.
     process_table() -> None
         Updates the troop table.
     """
 
     configs = CONFIG['TroopSettings']
-    table = configs['TableName']
     categories = configs['Categories']
     scrape_enabled = configs['ScrapeEnabled']
+    abandon_scrape_if_entity_exists = configs['AbandonScrapeIfEntityExists']
     null_id_scrape_enabled = configs['NullIdScrapeEnabled']
 
-    def __init__(self, coc_client:coc.Client, **kwargs) -> None:
+    def __init__(self, **kwargs) -> None:
         """
         Parameters
         ----------
-        coc_client : coc.Client
-            The client used to access the Clash of Clans API.
+        **kwargs
+            Keyword arguments to pass to the StorageHandler class.
         """
 
-        super().__init__(self.table, **kwargs)
-        self.coc_client = coc_client
-        self.categories = [category for category in self.categories if self.__is_valid_category__(category)]
+        super().__init__(table_name=self.configs['TableName'], **kwargs)
+        self.categories = [category for category in self.categories if self.__is_valid_category(category)]
 
-    def __is_valid_category__(self, category: str) -> bool:
+    def __is_valid_category(self, category: str) -> bool:
         """
         Determines if the given category is valid.
 
@@ -109,7 +83,7 @@ class TroopTableHandler(StorageHandler):
                 LOGGER.error(f'{category} is not a valid category.')
                 return False
 
-    def __get_item_list__(self, category: str) -> List[str]:
+    def __get_item_list(self, category: str) -> list[str]:
         """
         Returns the list of items for the given category.
 
@@ -120,7 +94,7 @@ class TroopTableHandler(StorageHandler):
 
         Returns
         -------
-        List[str]
+        list[str]
             The list of items for the given category.
         """
 
@@ -129,8 +103,6 @@ class TroopTableHandler(StorageHandler):
                 return coc.HERO_ORDER
             case "pet":
                 return coc.HERO_PETS_ORDER
-            case "troop":
-                return coc.HOME_TROOP_ORDER + coc.SUPER_TROOP_ORDER
             case "siege_machine":
                 return coc.SIEGE_MACHINE_ORDER         
             case "super_troop":
@@ -141,14 +113,11 @@ class TroopTableHandler(StorageHandler):
                 return coc.BUILDER_TROOPS_ORDER
             case "spell":
                 return coc.SPELL_ORDER
-            case "elixir_spell":
-                return coc.ELIXIR_SPELL_ORDER
-            case "dark_elixir_spell":
-                return coc.DARK_ELIXIR_SPELL_ORDER
             case _:
                 LOGGER.error(f'No available list for item type {category}!')
+                return None
 
-    def __get_entity_count__(self, data: coc.abc.DataContainer) -> int:
+    def __get_entity_count(self, data: coc.abc.DataContainer) -> int:
         """
         Returns the number of entities to insert/upsert to the table for a
         particular item.
@@ -173,7 +142,7 @@ class TroopTableHandler(StorageHandler):
                 count = max(count, len(a))
         return count
 
-    def __convert_data_to_entity_list__(self, data: coc.abc.DataContainer) -> Generator[Dict[str,Union[float,int,str]],None,None]:
+    def __convert_data_to_entity_list(self, data: coc.abc.DataContainer) -> Iterator[TableEntity]:
         """
         Converts the given data to a list of entities to insert/upsert to
         the table.
@@ -185,16 +154,15 @@ class TroopTableHandler(StorageHandler):
 
         Yields
         ------
-        Dict[str,Union[float,int,str]]
-            A dictionary containing the data for an entity to insert/upsert
-            to the table.
+        collections.abc.Iterator[azure.data.tables.TableEntity]
+            The data converted to an enumerable of entities.
         """
 
         LOGGER.debug(f'Creating entity for {try_get_attr(data, "name")} with ID {try_get_attr(data, "id")}.')
-        for i in range(self.__get_entity_count__(data)):
-            entity = dict()
+        for i in range(self.__get_entity_count(data)):
+            entity = TableEntity()
             # Mandatory keys
-            # TODO: How to deal with hero pet scenario where there is no id?
+            # TODO: How to deal with hero pet scenario where there is no unique id?
             entity['PartitionKey'] = f'{try_get_attr(data, "id")}_{try_get_attr(data, "level", i+1, default=i+1)}'
             entity['RowKey'] = f'{datetime.datetime.now().strftime("%Y-%m")}'
 
@@ -249,7 +217,59 @@ class TroopTableHandler(StorageHandler):
             
             yield entity
 
-    def __get_item_data__(self, item: str, category: str) -> coc.abc.DataContainer:
+    def __is_item_from_home_village(self, item: str, category: str) -> bool:
+        """
+        Returns whether the given item is from the home village.
+
+        Parameters
+        ----------
+        item : str
+            The item to check.
+        category : str
+            The category of the item.
+
+        Returns
+        -------
+        bool
+            Whether the given item is from the home village.
+        """
+
+        match category:
+            case 'builder_troop':
+                return False
+            case 'hero':
+                return item != 'Battle Machine'
+            case _:
+                return True
+
+    def __does_item_data_exist(self, item: str, category: str) -> bool:
+        """
+        Returns whether or not the given item data exists in the table.
+
+        Parameters
+        ----------
+        item : str
+            The item to check for.
+        category : str
+            The category of the item to check for.
+
+        Returns
+        -------
+        bool
+            True if the item data exists in the table, otherwise False.
+        """
+
+        LOGGER.debug(f'Checking if {item} exists in table {self.table_name}.')
+        
+        row_key = datetime.datetime.now().strftime('%Y-%m')
+        is_home_village = 'true' if self.__is_item_from_home_village(item, category) else 'false'
+
+        query_filter = f"RowKey eq '{row_key}' and Name eq '{item}' and IsHomeVillage eq {is_home_village}"
+        results = self.try_query_entities(query_filter=query_filter, retries_remaining=self.retry_entity_extraction_count, select='PartitionKey')
+        has_results = bool(next(results, False))
+        return has_results
+    
+    def __get_item_data(self, item: str, category: str) -> coc.abc.DataContainer:
         """
         Gets the data for the given item and category.
 
@@ -259,7 +279,7 @@ class TroopTableHandler(StorageHandler):
             The item to get the data for.
         category : str
             The category of the item.
-        
+
         Returns
         -------
         coc.abc.DataContainer
@@ -271,24 +291,21 @@ class TroopTableHandler(StorageHandler):
                 return self.coc_client.get_hero(item)
             case "pet":
                 return self.coc_client.get_pet(item)
-            case "troop" | \
-                 "elixir_troop" | \
-                 "dark_elixir_troop" | \
-                 "siege_machine" | \
-                 "super_troop" | \
-                 "home_troop":
+            case "elixir_troop" | \
+                "dark_elixir_troop" | \
+                "siege_machine" | \
+                "super_troop" | \
+                "home_troop":
                 return self.coc_client.get_troop(item, is_home_village=True)
             case "builder_troop":
                 return self.coc_client.get_troop(item, is_home_village=False)
-            case "spell" | \
-                 "elixir_spell" | \
-                 "dark_elixir_spell":
+            case "spell":
                 return self.coc_client.get_spell(item)
             case _:
                 LOGGER.error(f'{category} is not a valid category.')
                 return None
 
-    def __get_data__(self, category: str) -> Generator[Dict[str,Union[float,int,str]],None,None]:
+    def __get_data(self, category: str) -> Iterator[TableEntity]:
         """
         Retrieves the data for the given category and converts it to a list
         of entities to insert/upsert to the table.
@@ -300,14 +317,18 @@ class TroopTableHandler(StorageHandler):
 
         Yields
         ------
-        Dict[str,Union[float,int,str]]
-            A dictionary containing the data for an entity to insert/upsert
-            to the table.
+        azure.data.tables.TableEntity
+            A table entity to insert/upsert to the table.
         """
 
-        items = self.__get_item_list__(category)
+        items = self.__get_item_list(category)
         for item in items:
-            data = self.__get_item_data__(item, category)
+            should_abaondon_scrape = self.abandon_scrape_if_entity_exists and self.__does_item_data_exist(item, category)
+            if should_abaondon_scrape:
+                LOGGER.info(f'Abandoning scrape for {item} in category {category} because it already exists.')
+                continue
+
+            data = self.__get_item_data(item, category)
 
             if data is None:
                 LOGGER.warning(f'No data found for {item}.')
@@ -322,12 +343,12 @@ class TroopTableHandler(StorageHandler):
 
             try:
                 LOGGER.debug(f'Scraping {item} data from {category} category.')
-                yield from self.__convert_data_to_entity_list__(data)
+                yield from self.__convert_data_to_entity_list(data)
             except Exception as ex:
                 LOGGER.error(f'Unable to update table with {item} data from {category} category.')
                 LOGGER.error(str(ex))
 
-    def __update_table__(self, category: str) -> None:
+    def __update_table(self, category: str) -> None:
         """
         Updates the table with the data for the given category.
 
@@ -335,25 +356,49 @@ class TroopTableHandler(StorageHandler):
         ----------
         category : str
             The category of the data to retrieve.
+
+        Returns
+        -------
+        None
         """
         
-        # TODO: How to prevent data scraping if data is already present in table?
-        entities = self.__get_data__(category)
-        self.__write_data_to_table__(entities=entities)
+        entities = self.__get_data(category)
+        self.write_data_to_table(entities=entities)
 
-    def process_table(self) -> None:
+    async def process_table(self, coc_client_handling: bool = True) -> None:
         """
         Updates the table with the data for all categories.
+
+        Parameters
+        ----------
+        coc_client_handling : bool, optional
+            (Default: True) Whether or not to handle the coc client session
+            automatically.
+
+        Raises
+        ------
+        coc.errors.Forbidden
+            If the client is not authorized to access the data.
+
+        Returns
+        -------
+        None
         """
 
+        if coc_client_handling:
+            await self.start_coc_client_session()
+
         if self.scrape_enabled:
-            LOGGER.info(f'Troop table {self.table} is updating.')
+            LOGGER.info(f'Troop table {self.table_name} is updating.')
             for category in self.categories:
                 try:
                     LOGGER.debug(f'Updating table with {category} data.')
-                    self.__update_table__(category)
+                    self.__update_table(category)
                 except Exception as ex:
                     LOGGER.error(f'Unable to update table with {category} data.')
                     LOGGER.error(str(ex))
         else:
-            LOGGER.info(f'Troop table {self.table} is not updated because TroopSettings.ScrapeEnabled is {self.scrape_enabled}.')
+            LOGGER.info(f'Troop table {self.table_name} is not updated because TroopSettings.ScrapeEnabled is {self.scrape_enabled}.')
+
+        if coc_client_handling:
+            await self.close_coc_client_session()

@@ -121,12 +121,12 @@ class GoldPassTableHandler(StorageHandler):
         duration = try_get_attr(data, 'duration', default=None)
 
         entity = TableEntity()
-        entity.PartitionKey = self.__get_partition_key()
-        entity.RowKey = self.__get_row_key()
-        entity.SeasonId = datetime.datetime.now().strftime('%Y%m')
-        entity.StartTime = start_time.time if start_time is not None else None
-        entity.EndTime = end_time.time if end_time is not None else None
-        entity.Duration = self.__convert_timedelta_to_days(duration) if duration is not None else None
+        entity['PartitionKey'] = self.__get_partition_key()
+        entity['RowKey'] = self.__get_row_key()
+        entity['SeasonId'] = datetime.datetime.now().strftime('%Y%m')
+        entity['StartTime'] = start_time.time if start_time is not None else None
+        entity['EndTime'] = end_time.time if end_time is not None else None
+        entity['Duration'] = self.__convert_timedelta_to_days(duration) if duration is not None else None
         yield entity
 
     async def __get_data(self, retries_remaining: int = 0) -> coc.miscmodels.GoldPassSeason:

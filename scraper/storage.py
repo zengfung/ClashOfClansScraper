@@ -2,7 +2,7 @@ import logging
 import coc
 
 from scraper import CONFIG
-from collections.abc import Iterable
+from collections.abc import Iterator
 from azure.core.exceptions import ResourceExistsError
 from azure.core.exceptions import ResourceNotFoundError
 from azure.core.exceptions import ClientAuthenticationError
@@ -285,7 +285,7 @@ class StorageHandler(object):
         await self.coc_client.close()
         self.coc_client = None 
 
-    def write_data_to_table(self, entities: Iterable[TableEntity]) -> None:
+    def write_data_to_table(self, entities: Iterator[TableEntity]) -> None:
         """
         Writes the given entities to the table in Azure Table Storage.
 
@@ -337,7 +337,7 @@ class StorageHandler(object):
             LOGGER.debug(f'Attempting to get entity with partition key {partition_key} and row key {row_key}.')
             return self.table_client.get_entity(partition_key=partition_key, row_key=row_key, **kwargs)
         except ResourceNotFoundError as ex:
-            LOGGER.debug(f'Entity with partition key {partition_key} and row key {row_key} not found.')
+            LOGGER.critical(f'Entity with partition key {partition_key} and row key {row_key} not found.')
             LOGGER.debug(str(ex))
             return None
         except ClientAuthenticationError as ex:
@@ -349,5 +349,46 @@ class StorageHandler(object):
             if self.retry_entity_extraction_enabled and retries_remaining > 0:
                 LOGGER.debug(f'Retrying entity extraction {retries_remaining} more times.')
                 self.try_get_entity(partition_key=partition_key, row_key=row_key, retries_remaining=retries_remaining-1, **kwargs)
+            else:
+                LOGGER.debug('Entity extraction retry limit reached / Retry not enabled, skipping entity creation.')
+
+    def try_query_entities(
+            self, 
+            query_filter: str,
+            retries_remaining: int = 0,
+            **kwargs) -> Iterator[TableEntity]:
+        """
+        Attempts to query the entities in the table with the given filter.
+
+        Parameters
+        ----------
+        query_filter : str
+            The filter to be used to query the entities in the table.
+        retries_remaining : int, optional
+            (Default: 0) The number of retries remaining to attempt to query
+            the entities in the table with the given filter.
+        **kwargs
+            Additional keyword arguments to pass to the query_entities method.
+
+        Returns
+        -------
+        list[azure.data.tables.TableEntity]
+            The entities in the table with the given filter.
+        """
+
+        assert retries_remaining >= 0, 'retries_remaining must be greater than or equal to 0.'
+
+        try:
+            LOGGER.debug(f'Attempting to query entities with filter {query_filter}.')
+            return self.table_client.query_entities(query_filter=query_filter, **kwargs)
+        except ClientAuthenticationError as ex:
+            LOGGER.error('Client authentication error encountered, attempting re-login and retry entity extraction.')
+            LOGGER.error(str(ex))
+            self.service_table_client = self.__connect_table_service_client(account_name=self.__account_name, access_key=self.__access_key, connection_string=self.__connection_string)
+            self.table_client = self.__connect_table_client(self.table_name)
+
+            if self.retry_entity_extraction_enabled and retries_remaining > 0:
+                LOGGER.debug(f'Retrying entity extraction {retries_remaining} more times.')
+                self.try_query_entities(query_filter=query_filter, retries_remaining=retries_remaining-1, **kwargs)
             else:
                 LOGGER.debug('Entity extraction retry limit reached / Retry not enabled, skipping entity creation.')
