@@ -91,7 +91,7 @@ class PlayerTableHandler(StorageHandler):
 
         # Mandatory keys
         # PartitionKey to be defined as '{PlayerTag}-{TroopId}' when extracting troop details
-        entity['RowKey'] = datetime.datetime.now().strftime('%Y-%m-%d')
+        entity['RowKey'] = self.__get_row_key()
 
         # Identity keys
         entity['SeasonId'] = datetime.datetime.now().strftime('%Y-%m')
@@ -209,6 +209,18 @@ class PlayerTableHandler(StorageHandler):
         data = await self.coc_client.get_player(player_tag=player)
         return self.__convert_data_to_entity_list(data)
 
+    def __get_row_key(self) -> str:
+        """
+        Gets the row key for the player.
+
+        Returns
+        -------
+        str
+            The row key for the player in the current month.
+        """
+
+        return datetime.datetime.now().strftime('%Y-%m-%d')
+
     def __does_player_data_exist(self, player: str) -> bool:
         """
         Checks if the player data exists in the table.
@@ -226,7 +238,7 @@ class PlayerTableHandler(StorageHandler):
 
         LOGGER.debug(f'Checking if {player} exists in table {self.table_name}.')
         
-        row_key = datetime.datetime.now().strftime('%Y-%m-%d')
+        row_key = self.__get_row_key()
 
         query_filter = f"RowKey eq '{row_key}' and Tag eq '{player}'"
         results = self.try_query_entities(query_filter=query_filter, retries_remaining=self.retry_entity_extraction_count, select='PartitionKey')
