@@ -159,7 +159,7 @@ class PlayerTableHandler(StorageHandler):
             entity = base_entity.copy()
 
             # PartitionKey to be defined as '{PlayerTag}-{TroopId}'
-            LOGGER.warning(f'Adding {troop} to entity.')
+            LOGGER.debug(f'Adding {troop} to entity.')
             entity['PartitionKey'] = f"{try_get_attr(data, 'tag').lstrip('#')}-{try_get_attr(troop, 'id')}"
 
             # Get troop details
