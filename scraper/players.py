@@ -146,7 +146,7 @@ class PlayerTableHandler(StorageHandler):
         """
 
         inactive_super_troops = list(set(data.super_troops) - set(data.home_troops))
-        troop_list = data.heroes + data.hero_pets + data.spells + data.troops + data.builder_troops + inactive_super_troops
+        troop_list = data.heroes + data.hero_pets + data.spells + data.home_troops + data.builder_troops + inactive_super_troops
         
         for troop in troop_list:
             # Skip troop if troop object is None or its Id and Level is None
