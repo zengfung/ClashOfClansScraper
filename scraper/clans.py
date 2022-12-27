@@ -41,15 +41,17 @@ class ClanTableHandler(StorageHandler):
     member_scrape_enabled = configs['MemberScrapeEnabled']
     abandon_scrape_if_entity_exists = configs['AbandonScrapeIfEntityExists']
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, coc_client: coc.Client = None, **kwargs) -> None:
         """
         Parameters
         ----------
+        coc_client : coc.Client
+            (Default: None) The Clash of Clans API client object.
         kwargs
             The kwargs used to initialize the StorageHandler.
         """
         
-        super().__init__(table_name=self.configs['TableName'], **kwargs)
+        super().__init__(table_name=self.configs['TableName'], coc_client=coc_client, **kwargs)
         self.__login_kwargs = kwargs
 
     def __get_member_tags(self, clan: coc.Clan) -> Iterator[str]:
@@ -157,11 +159,6 @@ class ClanTableHandler(StorageHandler):
         None
         """
 
-        should_abandon_scrape = self.abandon_scrape_if_entity_exists and self.__does_clan_data_exist(try_get_attr(clan, 'tag'))
-        if should_abandon_scrape:
-            LOGGER.info(f'Abandoning member scrape for the clan {try_get_attr(clan, "tag")} because the clan data already exists.')
-            return None
-
         if self.member_scrape_enabled:
             assert isinstance(clan, coc.Clan)
 
@@ -249,7 +246,7 @@ class ClanTableHandler(StorageHandler):
         for clan in clans:
             should_abandon_scrape = self.abandon_scrape_if_entity_exists and self.__does_clan_data_exist(try_get_attr(clan, 'tag'))
             if should_abandon_scrape:
-                LOGGER.info(f'Abandoning member scrape for the clan {try_get_attr(clan, "tag")} because the clan data already exists.')
+                LOGGER.info(f'Abandoning clan scrape for the clan {try_get_attr(clan, "tag")} because the clan data already exists.')
                 continue
 
             try:

@@ -7,10 +7,8 @@ from scraper.players import PlayerTableHandler
 from scraper.clans import ClanTableHandler
 from scraper.storage import StorageHandler
 from scraper.utils import try_get_attr
-from typing import List
-from typing import Union
-from typing import Generator
-from typing import Dict
+from collections.abc import Iterator
+from azure.data.tables import TableEntity
 
 LOGGER = logging.getLogger(__name__)
 
@@ -54,21 +52,24 @@ class LocationTableHandler(StorageHandler):
     configs = CONFIG['LocationSettings']
     locations = configs['Locations']
     scrape_enabled = configs['ScrapeEnabled']
+    scrape_from_all_locations_enabled = configs['ScrapeFromAllLocationsEnabled']
     clan_scrape_by_location_enabled = configs["ClanScrapeByLocationEnabled"]
     clan_scrape_limit = configs["ClanScrapeLimit"]
     player_scrape_by_location_enabled = configs["PlayerScrapeByLocationEnabled"]
     player_scrape_limit = configs["PlayerScrapeLimit"]
     abandon_scrape_if_entity_exists = configs['AbandonScrapeIfEntityExists']
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, coc_client: coc.Client = None, **kwargs) -> None:
         """
         Parameters
         ----------
+        coc_client : coc.Client
+            (Default: None) The Clash of Clans API client object.
         kwargs
             The kwargs used to initialize the StorageHandler.
         """
 
-        super().__init__(table_name=self.configs['TableName'], **kwargs)
+        super().__init__(table_name=self.configs['TableName'], coc_client=coc_client, **kwargs)
         self.__login_kwargs = kwargs
 
     def __get_row_key(self) -> str:
@@ -105,7 +106,31 @@ class LocationTableHandler(StorageHandler):
         has_results = bool(next(results, False))
         return has_results
 
-    def __convert_data_to_entity_list__(self, locations: List[coc.Location]) -> Generator[Dict[str,Union[float,int,str]],None,None]:
+    def __get_location_ids(self, locations: Iterator[coc.Location], only_country_ids: bool = True) -> Iterator[str]:
+        """
+        Gets the location IDs from the locations.
+
+        Parameters
+        ----------
+        locations : Iterator[coc.Location]
+            The locations whose tags need to be retrieved.
+        only_country_ids : bool
+            Whether or not to only get the IDs for country locations.
+
+        Yields
+        ------
+        str
+            The list of location IDs.
+        """
+
+        for location in locations:
+            if only_country_ids and not try_get_attr(location, 'is_country', default=False):
+                continue
+
+            LOGGER.debug(f"Getting location id {try_get_attr(location, 'id')}.")
+            yield try_get_attr(location, 'id')
+
+    def __convert_data_to_entity_list__(self, locations: Iterator[coc.Location]) -> Iterator[TableEntity]:
         """
         Converts the location's data to a list of entities.
 
@@ -198,9 +223,17 @@ class LocationTableHandler(StorageHandler):
 
         if self.clan_scrape_by_location_enabled:
             try:
+                if self.scrape_from_all_locations_enabled:
+                    LOGGER.info("Scraping clans from all locations.")
+                    locations = await self.coc_client.search_locations(limit=None)
+                    location_ids = self.__get_location_ids(locations, only_country_ids=False)
+                else:
+                    LOGGER.info("Scraping clans from specified locations.")
+                    location_ids = self.locations
+
                 LOGGER.info("Scraping clans by location.")
-                for location in self.locations:
-                    LOGGER.info(f"Scraping {self.clan_scrape_limit} clans in {location}.")
+                for location in location_ids:
+                    LOGGER.critical(f"Scraping {self.clan_scrape_limit} clans in {location}.")
                     clans = await self.coc_client.get_location_clans(location_id=location, limit=self.clan_scrape_limit)
                     writer = ClanTableHandler(coc_client=self.coc_client, **self.__login_kwargs)
                     await writer.scrape_location_clans(clans, coc_client_handling=False)
@@ -231,8 +264,16 @@ class LocationTableHandler(StorageHandler):
 
         if self.player_scrape_by_location_enabled:
             try:
+                if self.scrape_from_all_locations_enabled:
+                    LOGGER.info("Scraping players from all locations.")
+                    locations = await self.coc_client.search_locations(limit=None)
+                    location_ids = self.__get_location_ids(locations, only_country_ids=True)
+                else:
+                    LOGGER.info("Scraping players from specified locations.")
+                    location_ids = self.locations
+
                 LOGGER.info("Scraping players by location.")
-                for location in self.locations:
+                for location in location_ids:
                     LOGGER.info(f"Scraping {self.player_scrape_limit} players in {location}.")
                     players = await self.coc_client.get_location_players(location_id=location, limit=self.player_scrape_limit)
                     writer = PlayerTableHandler(coc_client=self.coc_client, **self.__login_kwargs)

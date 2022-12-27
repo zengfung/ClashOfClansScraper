@@ -42,15 +42,17 @@ class PlayerTableHandler(StorageHandler):
     scrape_enabled = configs['ScrapeEnabled']
     abandon_scrape_if_entity_exists = configs['AbandonScrapeIfEntityExists']
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, coc_client: coc.Client = None, **kwargs) -> None:
         """
         Parameters
         ----------
+        coc_client : coc.Client
+            (Default: None) The Clash of Clans API client object.
         **kwargs
             Keyword arguments to pass to the StorageHandler class.
         """
 
-        super().__init__(table_name=self.configs['TableName'], **kwargs)
+        super().__init__(table_name=self.configs['TableName'], coc_client=coc_client, **kwargs)
 
     def __is_super_troop_active(self, troop: coc.abc.DataContainer, data: coc.abc.BasePlayer) -> bool:
         """
