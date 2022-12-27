@@ -56,9 +56,9 @@ async def main():
     writer = TroopTableHandler(**login_kwargs)
     await writer.process_table()
 
-    # logging.info("Updating Player Table...")
-    # writer = PlayerTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
-    # await writer.process_table()
+    logging.info("Updating Player Table...")
+    writer = PlayerTableHandler(**login_kwargs)
+    await writer.process_table()
 
     # logging.info("Updating Clan Table...")
     # writer = ClanTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)

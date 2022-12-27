@@ -31,7 +31,7 @@ class TroopTableHandler(StorageHandler):
     
     Methods
     -------
-    process_table() -> None
+    process_table(coc_client_handling: bool = True) -> None
         Updates the troop table.
     """
 
@@ -266,6 +266,7 @@ class TroopTableHandler(StorageHandler):
 
         query_filter = f"RowKey eq '{row_key}' and Name eq '{item}' and IsHomeVillage eq {is_home_village}"
         results = self.try_query_entities(query_filter=query_filter, retries_remaining=self.retry_entity_extraction_count, select='PartitionKey')
+        
         has_results = bool(next(results, False))
         return has_results
     
@@ -374,11 +375,6 @@ class TroopTableHandler(StorageHandler):
         coc_client_handling : bool, optional
             (Default: True) Whether or not to handle the coc client session
             automatically.
-
-        Raises
-        ------
-        coc.errors.Forbidden
-            If the client is not authorized to access the data.
 
         Returns
         -------
