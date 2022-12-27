@@ -60,9 +60,9 @@ async def main():
     writer = PlayerTableHandler(**login_kwargs)
     await writer.process_table()
 
-    # logging.info("Updating Clan Table...")
-    # writer = ClanTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
-    # await writer.process_table()
+    logging.info("Updating Clan Table...")
+    writer = ClanTableHandler(**login_kwargs)
+    await writer.process_table()
 
     # logging.info("Updating Location Table...")
     # writer = LocationTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)

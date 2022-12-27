@@ -332,6 +332,7 @@ class PlayerTableHandler(StorageHandler):
 
         Returns
         -------
+        None
         """
 
         if coc_client_handling:
