@@ -233,7 +233,7 @@ class LocationTableHandler(StorageHandler):
 
                 LOGGER.info("Scraping clans by location.")
                 for location in location_ids:
-                    LOGGER.critical(f"Scraping {self.clan_scrape_limit} clans in {location}.")
+                    LOGGER.info(f"Scraping {self.clan_scrape_limit} clans in {location}.")
                     clans = await self.coc_client.get_location_clans(location_id=location, limit=self.clan_scrape_limit)
                     writer = ClanTableHandler(coc_client=self.coc_client, **self.__login_kwargs)
                     await writer.scrape_location_clans(clans, coc_client_handling=False)
