@@ -81,6 +81,7 @@ class StorageHandler(object):
             table_name: str,
             coc_email: str,
             coc_password: str,
+            coc_client: coc.Client = None,
             account_name: str = None, 
             access_key: str = None, 
             connection_string: str = None) -> None:
@@ -93,6 +94,8 @@ class StorageHandler(object):
             The email address of the Clash of Clans API account.
         coc_password : str
             The password of the Clash of Clans API account.
+        coc_client : coc.Client
+            (Default: None) The Clash of Clans API client object.
         account_name : str, optional
             (Default: None) The account name of the Azure Table Storage.
         access_key : str, optional
@@ -105,7 +108,7 @@ class StorageHandler(object):
         self.__coc_email = coc_email
         self.__coc_password = coc_password
         # Need to manually start coc_client session
-        self.coc_client = None  
+        self.coc_client = coc_client  
 
         # Azure Table Storage Client
         self.table_name = table_name

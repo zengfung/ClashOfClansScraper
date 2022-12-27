@@ -202,8 +202,8 @@ class LocationTableHandler(StorageHandler):
                 for location in self.locations:
                     LOGGER.info(f"Scraping {self.clan_scrape_limit} clans in {location}.")
                     clans = await self.coc_client.get_location_clans(location_id=location, limit=self.clan_scrape_limit)
-                    writer = ClanTableHandler(**self.__login_kwargs)
-                    await writer.scrape_location_clans(clans)
+                    writer = ClanTableHandler(coc_client=self.coc_client, **self.__login_kwargs)
+                    await writer.scrape_location_clans(clans, coc_client_handling=False)
             except Exception as ex:
                 LOGGER.error("Error occurred while scraping clans by location.")
                 LOGGER.error(str(ex))
@@ -235,8 +235,8 @@ class LocationTableHandler(StorageHandler):
                 for location in self.locations:
                     LOGGER.info(f"Scraping {self.player_scrape_limit} players in {location}.")
                     players = await self.coc_client.get_location_players(location_id=location, limit=self.player_scrape_limit)
-                    writer = PlayerTableHandler(**self.__login_kwargs)
-                    await writer.scrape_location_players(players)
+                    writer = PlayerTableHandler(coc_client=self.coc_client, **self.__login_kwargs)
+                    await writer.scrape_location_players(players, coc_client_handling=False)
             except Exception as ex:
                 LOGGER.error("Error occurred while scraping players by location.")
                 LOGGER.error(str(ex))

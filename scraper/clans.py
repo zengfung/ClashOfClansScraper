@@ -138,9 +138,9 @@ class ClanTableHandler(StorageHandler):
 
         assert isinstance(clan, coc.Clan)
 
-        scraper = PlayerTableHandler(**self.__login_kwargs)
+        scraper = PlayerTableHandler(coc_client=self.coc_client, **self.__login_kwargs)
         member_tags = self.__get_member_tags(clan)
-        await scraper.scrape_clan_members(member_tags)
+        await scraper.scrape_clan_members(member_tags, coc_client_handling=False)
 
     async def __scrape_members_data_if_needed(self, clan: coc.Clan) -> None:
         """
