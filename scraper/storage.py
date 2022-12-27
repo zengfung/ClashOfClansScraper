@@ -337,7 +337,7 @@ class StorageHandler(object):
             LOGGER.debug(f'Attempting to get entity with partition key {partition_key} and row key {row_key}.')
             return self.table_client.get_entity(partition_key=partition_key, row_key=row_key, **kwargs)
         except ResourceNotFoundError as ex:
-            LOGGER.critical(f'Entity with partition key {partition_key} and row key {row_key} not found.')
+            LOGGER.debug(f'Entity with partition key {partition_key} and row key {row_key} not found.')
             LOGGER.debug(str(ex))
             return None
         except ClientAuthenticationError as ex:
