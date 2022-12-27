@@ -262,7 +262,7 @@ class PlayerTableHandler(StorageHandler):
 
         should_abandon_scrape = self.abandon_scrape_if_entity_exists and self.__does_player_data_exist(player)
         if should_abandon_scrape:
-            LOGGER.info(f'Abandoning scrape for {player} in because it already exists.')
+            LOGGER.info(f'Abandoning scrape for {player} because it already exists.')
             return None
 
         entities = await self.__get_data(player)

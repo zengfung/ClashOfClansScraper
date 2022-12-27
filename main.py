@@ -64,11 +64,11 @@ async def main():
     writer = ClanTableHandler(**login_kwargs)
     await writer.process_table()
 
-    # logging.info("Updating Location Table...")
-    # writer = LocationTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
-    # await writer.process_table()
-    # await writer.process_clan_scrape()
-    # await writer.process_player_scrape()
+    logging.info("Updating Location Table...")
+    writer = LocationTableHandler(**login_kwargs)
+    await writer.process_table()
+    await writer.process_clan_scrape()
+    await writer.process_player_scrape()
 
 if __name__ == '__main__':
     asyncio.run(main())

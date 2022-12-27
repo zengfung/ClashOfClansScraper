@@ -43,6 +43,7 @@ ClanSettings:
 LocationSettings:
   TableName: "Location"
   ScrapeEnabled: true
+  AbandonScrapeIfEntityExists: true
   # Location data to be scraped.
   #   1: 32000144
   #   2: 32000209
