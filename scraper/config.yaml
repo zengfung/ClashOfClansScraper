@@ -1,19 +1,26 @@
 StorageHandlerSettings:
+  RetryEntityCreationEnabled: true
+  RetryEntityCreationCount: 1
+  RetryEntityExtractionEnabled: true
+  RetryEntityExtractionCount: 1
   UpsertAtFailedPushEnabled: true
 
 TroopSettings:
   TableName: "Troop"
   Categories: ["hero", "pet", "home_troop", "super_troop", "builder_troop", "spell"]
   ScrapeEnabled: true
+  AbandonScrapeIfEntityExists: true
   NullIdScrapeEnabled: false
 
 GoldPassSettings:
   TableName: "GoldPass"
   ScrapeEnabled: true
+  AbandonScrapeIfEntityExists: true
 
 PlayerSettings:
   TableName: "Player"
   ScrapeEnabled: true
+  AbandonScrapeIfEntityExists: true
   # Player data to be scraped.
   #   zoecmy: #QPPLYYJGY
   Players: ["#QPPLYYJGY"]
@@ -21,6 +28,7 @@ PlayerSettings:
 ClanSettings:
   TableName: "Clan"
   ScrapeEnabled: true
+  AbandonScrapeIfEntityExists: true
   # Clan data to be scraped.
   #   ATAS: #9J82VUV
   #     includes:
@@ -35,11 +43,12 @@ ClanSettings:
 LocationSettings:
   TableName: "Location"
   ScrapeEnabled: true
+  AbandonScrapeIfEntityExists: true
   # Location data to be scraped.
   #   1: 32000144
   #   2: 32000209
   Locations: [32000144, 32000209]
   ClanScrapeByLocationEnabled: true
   ClanScrapeLimit: 10
-  PlayerScrapeByLocationEnabled: false
+  PlayerScrapeByLocationEnabled: true
   PlayerScrapeLimit: 10

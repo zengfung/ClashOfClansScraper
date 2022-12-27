@@ -1,6 +1,5 @@
 import argparse
 import asyncio
-import coc
 import logging
 from scraper.gold_pass import GoldPassTableHandler
 from scraper.troops import TroopTableHandler
@@ -41,34 +40,35 @@ async def main():
     logging.basicConfig(format='%(levelname)s - %(asctime)s - %(module)s.%(funcName)s Line %(lineno)d : %(message)s', 
                         level=get_log_level(args.verbosity))
 
-    logging.info("Calling the Clash of Clans client...")
-    client = coc.Client(load_game_data=coc.LoadGameData(default=True))
-    await client.login(args.email, args.password)
+    login_kwargs = {
+        'coc_email': args.email,
+        'coc_password': args.password,
+        'account_name': args.name,
+        'access_key': args.access_key,
+        'connection_string': args.connection_string
+    }
 
     logging.info("Updating Gold Pass Season Table...")
-    writer = GoldPassTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
+    writer = GoldPassTableHandler(**login_kwargs)
     await writer.process_table()
 
     logging.info("Updating Troop Table...")
-    writer = TroopTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
-    writer.process_table()
+    writer = TroopTableHandler(**login_kwargs)
+    await writer.process_table()
 
     logging.info("Updating Player Table...")
-    writer = PlayerTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
+    writer = PlayerTableHandler(**login_kwargs)
     await writer.process_table()
 
     logging.info("Updating Clan Table...")
-    writer = ClanTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
+    writer = ClanTableHandler(**login_kwargs)
     await writer.process_table()
 
     logging.info("Updating Location Table...")
-    writer = LocationTableHandler(client, account_name=args.name, access_key=args.access_key, connection_string=args.connection_string)
+    writer = LocationTableHandler(**login_kwargs)
     await writer.process_table()
     await writer.process_clan_scrape()
     await writer.process_player_scrape()
-
-    logging.info("Closing the Clash of Clans client...")
-    await client.close()
 
 if __name__ == '__main__':
     asyncio.run(main())
