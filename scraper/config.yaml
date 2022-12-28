@@ -49,7 +49,7 @@ LocationSettings:
   #   2: 32000209 - Singapore
   Locations: [32000144, 32000209]
   # If the following is enabled, the 'Location' setting will be ignored.
-  ScrapeFromAllLocationsEnabled: true
+  ScrapeFromAllLocationsEnabled: false
   ClanScrapeByLocationEnabled: true
   ClanScrapeLimit: 10
   PlayerScrapeByLocationEnabled: true
