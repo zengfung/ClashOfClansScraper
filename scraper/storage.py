@@ -241,17 +241,18 @@ class TableStorageHandler(object):
         """
         
         LOGGER.debug(f'Writing entities to the table {self.table_name}.')
+        try_create_or_upsert_entity = partial(
+            self.try_create_or_upsert_entity_with_retry, 
+            table_client=self.table_client, 
+            table_name=self.table_name, 
+            account_name=self.__account_name, 
+            access_key=self.__access_key, 
+            connection_string=self.__connection_string,
+            retries_remaining=self.retry_entity_creation_count)
+            
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.thread_worker_count) as executor:
             LOGGER.debug(f'Running thread executor with at most {executor._max_workers} threads.')
             try:
-                try_create_or_upsert_entity = partial(
-                    self.try_create_or_upsert_entity_with_retry, 
-                    table_client=self.table_client, 
-                    table_name=self.table_name, 
-                    account_name=self.__account_name, 
-                    access_key=self.__access_key, 
-                    connection_string=self.__connection_string,
-                    retries_remaining=self.retry_entity_creation_count)
                 results = executor.map(try_create_or_upsert_entity, entities)
                 for result in results:
                     LOGGER.debug(result)
