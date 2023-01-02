@@ -13,11 +13,13 @@ LOGGER = logging.getLogger(__name__)
     
 class GoldPassTableHandler(CocClientHandler):
     """
-    The Gold Pass table is updated once a month.  The table is updated with 
+    The Gold Pass table is updated once a month. The table is updated with 
     the current season's data.
 
     Attributes
     ----------
+    table_name : str
+        The name of the table in Azure Table Storage.
     scrape_enabled : bool
         Determines if data scraping should be performed.
     abandon_scrape_if_entity_exists : bool
@@ -44,8 +46,14 @@ class GoldPassTableHandler(CocClientHandler):
         """
         Parameters
         ----------
+        coc_email : str
+            The email address of the Clash of Clans account.
+        coc_password : str
+            The password of the Clash of Clans account.
+        coc_client : coc.Client, optional
+            (Default: None) The Clash of Clans client to use.
         **kwargs
-            Keyword arguments to pass to the StorageHandler class.
+            Keyword arguments to pass to the TableStorageHandler class.
         """
 
         super().__init__(coc_email=coc_email, coc_password=coc_password, coc_client=coc_client)

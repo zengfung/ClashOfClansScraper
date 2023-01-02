@@ -19,6 +19,8 @@ class TroopTableHandler(CocClientHandler):
 
     Attributes
     ----------
+    table_name : str
+        The name of the table in Azure Table Storage.
     categories : list[str]
         The categories of troops to scrape.
     scrape_enabled : bool
@@ -52,8 +54,14 @@ class TroopTableHandler(CocClientHandler):
         """
         Parameters
         ----------
+        coc_email : str
+            The email address of the Clash of Clans account.
+        coc_password : str
+            The password of the Clash of Clans account.
+        coc_client : coc.Client, optional
+            (Default: None) The Clash of Clans client to use.
         **kwargs
-            Keyword arguments to pass to the StorageHandler class.
+            Keyword arguments to pass to the TableStorageHandler class.
         """
 
         super().__init__(coc_email=coc_email, coc_password=coc_password, coc_client=coc_client)

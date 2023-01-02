@@ -18,6 +18,8 @@ class ClanTableHandler(CocClientHandler):
 
     Attributes
     ----------
+    table_name : str
+        The name of the table in Azure Table Storage.
     clans : list[str]
         The list of clan tags whose data needs to be scraped.
     scrape_enabled : bool
@@ -52,10 +54,14 @@ class ClanTableHandler(CocClientHandler):
         """
         Parameters
         ----------
-        coc_client : coc.Client
-            (Default: None) The Clash of Clans API client object.
-        kwargs
-            The kwargs used to initialize the StorageHandler.
+        coc_email : str
+            The email address of the Clash of Clans account.
+        coc_password : str
+            The password of the Clash of Clans account.
+        coc_client : coc.Client, optional
+            (Default: None) The Clash of Clans client to use.
+        **kwargs
+            Keyword arguments to pass to the TableStorageHandler class.
         """
         
         super().__init__(coc_email=coc_email, coc_password=coc_password, coc_client=coc_client)
