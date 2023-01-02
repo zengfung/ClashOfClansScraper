@@ -4,13 +4,14 @@ import datetime
 
 from collections.abc import Iterator
 from scraper import CONFIG
-from scraper.storage import StorageHandler
+from scraper.storage import TableStorageHandler
+from scraper.coc_client import CocClientHandler
 from scraper.utils import try_get_attr
 from azure.data.tables import TableEntity
 
 LOGGER = logging.getLogger(__name__)
 
-class PlayerTableHandler(StorageHandler):
+class PlayerTableHandler(CocClientHandler):
     """
     The table contains a player's current progress in the game. Currently, 
     this means that only in-game achievements and troop levels are being 
@@ -38,11 +39,17 @@ class PlayerTableHandler(StorageHandler):
     """
 
     configs = CONFIG['PlayerSettings']
+    table_name = configs['TableName']
     players = configs['Players']
     scrape_enabled = configs['ScrapeEnabled']
     abandon_scrape_if_entity_exists = configs['AbandonScrapeIfEntityExists']
 
-    def __init__(self, coc_client: coc.Client = None, **kwargs) -> None:
+    def __init__(
+            self, 
+            coc_email: str,
+            coc_password: str,
+            coc_client: coc.Client = None,
+            **kwargs) -> None:
         """
         Parameters
         ----------
@@ -52,7 +59,8 @@ class PlayerTableHandler(StorageHandler):
             Keyword arguments to pass to the StorageHandler class.
         """
 
-        super().__init__(table_name=self.configs['TableName'], coc_client=coc_client, **kwargs)
+        super().__init__(coc_email=coc_email, coc_password=coc_password, coc_client=coc_client)
+        self.table_handler = TableStorageHandler(table_name=self.table_name, **kwargs)
 
     def __is_super_troop_active(self, troop: coc.abc.DataContainer, data: coc.abc.BasePlayer) -> bool:
         """
@@ -243,7 +251,7 @@ class PlayerTableHandler(StorageHandler):
         row_key = self.__get_row_key()
 
         query_filter = f"RowKey eq '{row_key}' and Tag eq '{player}'"
-        results = self.try_query_entities(query_filter=query_filter, retries_remaining=self.retry_entity_extraction_count, select='PartitionKey')
+        results = self.table_handler.try_query_entities(query_filter=query_filter, retries_remaining=self.table_handler.retry_entity_extraction_count, select='PartitionKey')
         
         has_results = bool(next(results, False))
         return has_results
@@ -264,11 +272,11 @@ class PlayerTableHandler(StorageHandler):
 
         should_abandon_scrape = self.abandon_scrape_if_entity_exists and self.__does_player_data_exist(player)
         if should_abandon_scrape:
-            LOGGER.info(f'Abandoning scrape for {player} because it already exists.')
+            LOGGER.debug(f'Abandoning scrape for {player} because it already exists.')
             return None
 
         entities = await self.__get_data(player)
-        self.write_data_to_table(entities=entities)
+        self.table_handler.write_data_to_table(entities=entities)
 
     async def scrape_location_players(self, players: Iterator[coc.players.RankedPlayer], coc_client_handling: bool = True) -> None:
         """
@@ -290,7 +298,7 @@ class PlayerTableHandler(StorageHandler):
         if coc_client_handling:
             await self.start_coc_client_session()
         
-        LOGGER.info(f'Player table {self.table_name} is updating.')
+        LOGGER.debug(f'Player table {self.table_name} is updating.')
         for player in players:
             try:
                 LOGGER.debug(f'Updating table with {try_get_attr(player, "tag")}\'s data.')
@@ -322,7 +330,7 @@ class PlayerTableHandler(StorageHandler):
         if coc_client_handling:
             await self.start_coc_client_session()
 
-        LOGGER.info(f'Player table {self.table_name} is updating.')
+        LOGGER.debug(f'Player table {self.table_name} is updating.')
         for member_tag in member_tags:
             try:
                 LOGGER.debug(f'Updating table with player {member_tag} data.')
@@ -353,7 +361,7 @@ class PlayerTableHandler(StorageHandler):
             await self.start_coc_client_session()
 
         if self.scrape_enabled:
-            LOGGER.info(f'Player table {self.table_name} is updating.')
+            LOGGER.debug(f'Player table {self.table_name} is updating.')
             for player in self.players:
                 try:
                     LOGGER.debug(f'Updating table with player {player} data.')

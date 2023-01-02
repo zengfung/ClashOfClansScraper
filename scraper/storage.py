@@ -12,6 +12,7 @@ from azure.data.tables import TableServiceClient
 from azure.data.tables import TableClient
 from azure.data.tables import TableEntity
 
+logging.getLogger('azure').setLevel(logging.WARNING)
 LOGGER = logging.getLogger(__name__)
 
 class TableStorageHandler(object):
@@ -122,7 +123,7 @@ class TableStorageHandler(object):
         LOGGER.debug(f'Connecting to table service client.')
         if (connection_string is not None):
             try:
-                LOGGER.info('Attempting connection via connection string.')
+                LOGGER.debug('Attempting connection via connection string.')
                 return TableServiceClient.from_connection_string(conn_str=connection_string)
             except Exception as ex:
                 LOGGER.error('Connection attempt via connection string failed.')
@@ -130,7 +131,7 @@ class TableStorageHandler(object):
         
         if (account_name is not None and access_key is not None):
             try:
-                LOGGER.info('Attempting connection via account name and access key.')
+                LOGGER.debug('Attempting connection via account name and access key.')
                 credential = AzureNamedKeyCredential(account_name, access_key)
                 return TableServiceClient(endpoint=f'https://{account_name}.table.core.windows.net/', credential=credential)
             except Exception as ex:
@@ -155,7 +156,7 @@ class TableStorageHandler(object):
         """
 
         try:
-            LOGGER.info(f'Connecting to table client {table_name}.')
+            LOGGER.debug(f'Connecting to table client {table_name}.')
             return table_service_client.create_table_if_not_exists(table_name=table_name)
         except Exception as ex:
             LOGGER.error(f'Failed to connect to table client {table_name}.')
@@ -203,7 +204,7 @@ class TableStorageHandler(object):
             table_client.create_entity(entity=entity)
             return f'Created entity with PartitionKey {entity["PartitionKey"]} and RowKey {entity["RowKey"]} in {kwargs.get("table_name", None)}.'
         except ResourceExistsError:
-            LOGGER.warning(f'Entity {entity["PartitionKey"]} already exists in {table_name}.')
+            LOGGER.debug(f'Entity {entity["PartitionKey"]} already exists in {table_name}.')
 
             if self.upsert_enabled:
                 try:
@@ -239,9 +240,9 @@ class TableStorageHandler(object):
         None
         """
         
-        LOGGER.info(f'Writing entities to the table {self.table_name}.')
+        LOGGER.debug(f'Writing entities to the table {self.table_name}.')
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.thread_worker_count) as executor:
-            LOGGER.info(f'Running thread executor with at most {executor._max_workers} threads.')
+            LOGGER.debug(f'Running thread executor with at most {executor._max_workers} threads.')
             try:
                 try_create_or_upsert_entity = partial(
                     self.try_create_or_upsert_entity_with_retry, 
@@ -253,12 +254,12 @@ class TableStorageHandler(object):
                     retries_remaining=self.retry_entity_creation_count)
                 results = executor.map(try_create_or_upsert_entity, entities)
                 for result in results:
-                    LOGGER.info(result)
+                    LOGGER.debug(result)
             except Exception as ex:
                 LOGGER.error(str(ex))
                 LOGGER.error(f'Exception type: {type(ex)}')
             LOGGER.debug(f'Pool threads complete.')
-        LOGGER.debug('Sent all entities to table.')
+        LOGGER.debug(f'Sent all entities to table {self.table_name}.')
 
     def try_get_entity(
             self, 

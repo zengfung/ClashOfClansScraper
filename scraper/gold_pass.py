@@ -64,7 +64,7 @@ class GoldPassTableHandler(CocClientHandler):
         LOGGER.debug(f'Checking if entity exists in table {self.table_name}.')
         partition_key = self.__get_partition_key()
         row_key = self.__get_row_key()
-        entity = self.table_handler.try_get_entity(partition_key, row_key, select='PartitionKey', retries_remaining=self.retry_entity_extraction_count)
+        entity = self.table_handler.try_get_entity(partition_key, row_key, select='PartitionKey', retries_remaining=self.table_handler.retry_entity_extraction_count)
         return entity is not None
 
     def __convert_timedelta_to_days(self, dt: datetime.timedelta) -> float:
@@ -187,7 +187,7 @@ class GoldPassTableHandler(CocClientHandler):
 
         should_abandon_scrape = self.abandon_scrape_if_entity_exists and self.__does_entity_exist()
         if should_abandon_scrape:
-            LOGGER.info(f'Abandoning scrape because entity exists in table {self.table_name} and GoldPassSettings.AbandonScrapeIfEntityExists is {self.abandon_scrape_if_entity_exists}.')
+            LOGGER.debug(f'Abandoning scrape because entity exists in table {self.table_name} and GoldPassSettings.AbandonScrapeIfEntityExists is {self.abandon_scrape_if_entity_exists}.')
             return None
 
         LOGGER.debug('Scraping Gold Pass data.')
@@ -220,7 +220,7 @@ class GoldPassTableHandler(CocClientHandler):
         
         if self.scrape_enabled:
             try:
-                LOGGER.info(f'Gold Pass table {self.table_name} is updating.')
+                LOGGER.debug(f'Gold Pass table {self.table_name} is updating.')
                 await self.__update_table()
             except Exception as ex:
                 LOGGER.error(f'Unable to update table with Gold Pass Season data.')

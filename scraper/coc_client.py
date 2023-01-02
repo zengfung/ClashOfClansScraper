@@ -1,9 +1,10 @@
 import logging
-import multiprocessing
+import time
 import coc
 
 from scraper import CONFIG
 
+logging.getLogger('coc').setLevel(logging.WARNING)
 LOGGER = logging.getLogger(__name__)
 
 class CocClientHandler(object):
@@ -27,6 +28,8 @@ class CocClientHandler(object):
     start_coc_client_session() -> None
         Starts the Clash of Clans API client session.
     """
+
+    restart_sleep_time = CONFIG['CocClient']['RestartSleepTime']
 
     def __init__(
             self,
@@ -59,8 +62,9 @@ class CocClientHandler(object):
         None
         """
 
-        LOGGER.debug('Restarting Clash of Clans API client session.')
+        LOGGER.debug(f'Restarting Clash of Clans API client session. Program will sleep for {self.restart_sleep_time} seconds after closing the session.')
         await self.close_coc_client_session()
+        time.sleep(self.restart_sleep_time)
         await self.start_coc_client_session()
 
     async def start_coc_client_session(self) -> None:

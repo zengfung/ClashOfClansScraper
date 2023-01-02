@@ -1,27 +1,30 @@
+CocClient:
+  RestartSleepTime: 5
+
 StorageHandlerSettings:
   RetryEntityCreationEnabled: true
   RetryEntityCreationCount: 1
   RetryEntityExtractionEnabled: true
   RetryEntityExtractionCount: 1
   UpsertAtFailedPushEnabled: true
-  ThreadWorkerCount: 10
+  ThreadWorkerCount: 9
 
 TroopSettings:
   TableName: "Troop"
   Categories: ["hero", "pet", "home_troop", "super_troop", "builder_troop", "spell"]
   ScrapeEnabled: true
-  AbandonScrapeIfEntityExists: false
+  AbandonScrapeIfEntityExists: true
   NullIdScrapeEnabled: false
 
 GoldPassSettings:
   TableName: "GoldPass"
   ScrapeEnabled: true
-  AbandonScrapeIfEntityExists: false
+  AbandonScrapeIfEntityExists: true
 
 PlayerSettings:
   TableName: "Player"
   ScrapeEnabled: true
-  AbandonScrapeIfEntityExists: false
+  AbandonScrapeIfEntityExists: true
   # Player data to be scraped.
   #   zoecmy: #QPPLYYJGY
   Players: ["#QPPLYYJGY"]
@@ -51,7 +54,7 @@ LocationSettings:
   Locations: [32000144, 32000209]
   # If the following is enabled, the 'Location' setting will be ignored.
   ScrapeFromAllLocationsEnabled: false
-  ClanScrapeByLocationEnabled: false
+  ClanScrapeByLocationEnabled: true
   ClanScrapeLimit: 10
-  PlayerScrapeByLocationEnabled: false
+  PlayerScrapeByLocationEnabled: true
   PlayerScrapeLimit: 10

@@ -273,7 +273,7 @@ class TroopTableHandler(CocClientHandler):
         is_home_village = 'true' if self.__is_item_from_home_village(item, category) else 'false'
 
         query_filter = f"RowKey eq '{row_key}' and Name eq '{item}' and IsHomeVillage eq {is_home_village}"
-        results = self.table_handler.try_query_entities(query_filter=query_filter, retries_remaining=self.retry_entity_extraction_count, select='PartitionKey')
+        results = self.table_handler.try_query_entities(query_filter=query_filter, retries_remaining=self.table_handler.retry_entity_extraction_count, select='PartitionKey')
         
         has_results = bool(next(results, False))
         return has_results
@@ -334,7 +334,7 @@ class TroopTableHandler(CocClientHandler):
         for item in items:
             should_abaondon_scrape = self.abandon_scrape_if_entity_exists and self.__does_item_data_exist(item, category)
             if should_abaondon_scrape:
-                LOGGER.info(f'Abandoning scrape for {item} in category {category} because it already exists.')
+                LOGGER.debug(f'Abandoning scrape for {item} in category {category} because it already exists.')
                 continue
 
             data = self.__get_item_data(item, category)
@@ -393,7 +393,7 @@ class TroopTableHandler(CocClientHandler):
             await self.start_coc_client_session()
 
         if self.scrape_enabled:
-            LOGGER.info(f'Troop table {self.table_name} is updating.')
+            LOGGER.debug(f'Troop table {self.table_name} is updating.')
             for category in self.categories:
                 try:
                     LOGGER.debug(f'Updating table with {category} data.')
