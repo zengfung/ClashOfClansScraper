@@ -263,7 +263,7 @@ class ClanTableHandler(CocClientHandler):
             # Abandon scrape of clan if the clan data already exists.
             should_abandon_scrape = self.abandon_scrape_if_entity_exists and self.__does_clan_data_exist(try_get_attr(clan, 'tag'))
             if should_abandon_scrape:
-                LOGGER.info(f'Abandoning clan scrape for the clan {try_get_attr(clan, "tag")} because the clan data already exists.')
+                LOGGER.info(f'Abandoning clan scrape for the clan {try_get_attr(clan, "tag")} from location {try_get_attr(clan.location, "id") if hasattr(clan, "location") else None} because the clan data already exists.')
                 continue
 
             try:
@@ -306,7 +306,7 @@ class ClanTableHandler(CocClientHandler):
                     LOGGER.info(f'Abandoning member scrape for the clan {self.clans[i]} because the clan data already exists.')
                     self.clans.pop(i)
 
-            LOGGER.info(f'Clan table {self.table_name} is updating.')
+            LOGGER.debug(f'Clan table {self.table_name} is updating.')
             async for clan in self.coc_client.get_clans(self.clans):
                 try:
                     LOGGER.debug(f'Updating table with clan {clan} data.')

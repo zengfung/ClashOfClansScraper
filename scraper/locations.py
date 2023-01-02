@@ -245,7 +245,7 @@ class LocationTableHandler(CocClientHandler):
                     LOGGER.info("Scraping clans from specified locations.")
                     location_ids = self.locations
 
-                LOGGER.info("Scraping clans by location.")
+                LOGGER.debug("Scraping clans by location.")
                 for location in location_ids:
                     LOGGER.info(f"Scraping {self.clan_scrape_limit} clans in {location}.")
                     clans = await self.coc_client.get_location_clans(location_id=location, limit=self.clan_scrape_limit)
