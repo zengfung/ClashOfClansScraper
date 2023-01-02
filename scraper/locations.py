@@ -3,16 +3,17 @@ import coc
 import datetime
 
 from scraper import CONFIG
+from scraper.coc_client import CocClientHandler
 from scraper.players import PlayerTableHandler
 from scraper.clans import ClanTableHandler
-from scraper.storage import StorageHandler
+from scraper.storage import TableStorageHandler
 from scraper.utils import try_get_attr
 from collections.abc import Iterator
 from azure.data.tables import TableEntity
 
 LOGGER = logging.getLogger(__name__)
 
-class LocationTableHandler(StorageHandler):
+class LocationTableHandler(CocClientHandler):
     """
     The table contains a single entity for each location. The entity's
     PartitionKey is the location's ID and the RowKey is the year-month
@@ -23,6 +24,8 @@ class LocationTableHandler(StorageHandler):
 
     Attributes
     ----------
+    table_name : str
+        The name of the table in Azure Table Storage.
     locations : List[int]
         The list of locations to scrape.
     scrape_enabled : bool
@@ -50,6 +53,7 @@ class LocationTableHandler(StorageHandler):
     """
 
     configs = CONFIG['LocationSettings']
+    table_name = configs['TableName']
     locations = configs['Locations']
     scrape_enabled = configs['ScrapeEnabled']
     scrape_from_all_locations_enabled = configs['ScrapeFromAllLocationsEnabled']
@@ -59,17 +63,27 @@ class LocationTableHandler(StorageHandler):
     player_scrape_limit = configs["PlayerScrapeLimit"]
     abandon_scrape_if_entity_exists = configs['AbandonScrapeIfEntityExists']
 
-    def __init__(self, coc_client: coc.Client = None, **kwargs) -> None:
+    def __init__(
+            self, 
+            coc_email: str,
+            coc_password: str,
+            coc_client: coc.Client = None,
+            **kwargs) -> None:
         """
         Parameters
         ----------
-        coc_client : coc.Client
-            (Default: None) The Clash of Clans API client object.
-        kwargs
-            The kwargs used to initialize the StorageHandler.
+        coc_email : str
+            The email address of the Clash of Clans account.
+        coc_password : str
+            The password of the Clash of Clans account.
+        coc_client : coc.Client, optional
+            (Default: None) The Clash of Clans client to use.
+        **kwargs
+            Keyword arguments to pass to the TableStorageHandler class.
         """
 
-        super().__init__(table_name=self.configs['TableName'], coc_client=coc_client, **kwargs)
+        super().__init__(coc_email=coc_email, coc_password=coc_password, coc_client=coc_client)
+        self.table_handler = TableStorageHandler(table_name=self.table_name, **kwargs)
         self.__login_kwargs = kwargs
 
     def __get_row_key(self) -> str:
@@ -101,7 +115,7 @@ class LocationTableHandler(StorageHandler):
         row_key = self.__get_row_key()
 
         query_filter = f"RowKey eq '{row_key}'"
-        results = self.try_query_entities(query_filter=query_filter, retries_remaining=self.retry_entity_extraction_count, select='PartitionKey')
+        results = self.table_handler.try_query_entities(query_filter=query_filter, retries_remaining=self.table_handler.retry_entity_extraction_count, select='PartitionKey')
         
         has_results = bool(next(results, False))
         return has_results
@@ -193,7 +207,7 @@ class LocationTableHandler(StorageHandler):
                 
                 locations = await self.coc_client.search_locations(limit=None)
                 entities = self.__convert_data_to_entity_list__(locations)
-                self.write_data_to_table(entities=entities)
+                self.table_handler.write_data_to_table(entities=entities)
                     
                 LOGGER.info("Location data scraped successfully.")
             except Exception as ex:
@@ -231,11 +245,14 @@ class LocationTableHandler(StorageHandler):
                     LOGGER.info("Scraping clans from specified locations.")
                     location_ids = self.locations
 
-                LOGGER.info("Scraping clans by location.")
+                LOGGER.debug("Scraping clans by location.")
                 for location in location_ids:
                     LOGGER.info(f"Scraping {self.clan_scrape_limit} clans in {location}.")
                     clans = await self.coc_client.get_location_clans(location_id=location, limit=self.clan_scrape_limit)
-                    writer = ClanTableHandler(coc_client=self.coc_client, **self.__login_kwargs)
+
+                    coc_email = self.__login_kwargs.get('coc_email')
+                    coc_password = self.__login_kwargs.get('coc_password')
+                    writer = ClanTableHandler(coc_email=coc_email, coc_password=coc_password, coc_client=self.coc_client, **self.__login_kwargs)
                     await writer.scrape_location_clans(clans, coc_client_handling=False)
             except Exception as ex:
                 LOGGER.error("Error occurred while scraping clans by location.")
@@ -276,7 +293,10 @@ class LocationTableHandler(StorageHandler):
                 for location in location_ids:
                     LOGGER.info(f"Scraping {self.player_scrape_limit} players in {location}.")
                     players = await self.coc_client.get_location_players(location_id=location, limit=self.player_scrape_limit)
-                    writer = PlayerTableHandler(coc_client=self.coc_client, **self.__login_kwargs)
+
+                    coc_email = self.__login_kwargs.get('coc_email')
+                    coc_password = self.__login_kwargs.get('coc_password')
+                    writer = PlayerTableHandler(coc_email=coc_email, coc_password=coc_password, coc_client=self.coc_client, **self.__login_kwargs)
                     await writer.scrape_location_players(players, coc_client_handling=False)
             except Exception as ex:
                 LOGGER.error("Error occurred while scraping players by location.")

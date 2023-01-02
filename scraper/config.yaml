@@ -1,9 +1,13 @@
+CocClient:
+  RestartSleepTime: 5
+
 StorageHandlerSettings:
   RetryEntityCreationEnabled: true
   RetryEntityCreationCount: 1
   RetryEntityExtractionEnabled: true
   RetryEntityExtractionCount: 1
   UpsertAtFailedPushEnabled: true
+  ThreadWorkerCount: 9
 
 TroopSettings:
   TableName: "Troop"

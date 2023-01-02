@@ -4,19 +4,22 @@ import datetime
 
 from collections.abc import Iterator
 from scraper import CONFIG
+from scraper.coc_client import CocClientHandler
 from scraper.players import PlayerTableHandler
-from scraper.storage import StorageHandler
+from scraper.storage import TableStorageHandler
 from scraper.utils import try_get_attr
 from azure.data.tables import TableEntity
 
 LOGGER = logging.getLogger(__name__)
 
-class ClanTableHandler(StorageHandler):
+class ClanTableHandler(CocClientHandler):
     """
     The table contains a clan's current progress in the game.
 
     Attributes
     ----------
+    table_name : str
+        The name of the table in Azure Table Storage.
     clans : list[str]
         The list of clan tags whose data needs to be scraped.
     scrape_enabled : bool
@@ -36,22 +39,33 @@ class ClanTableHandler(StorageHandler):
     """
 
     configs = CONFIG['ClanSettings']
+    table_name = configs['TableName']
     clans = configs['Clans']
     scrape_enabled = configs['ScrapeEnabled']
     member_scrape_enabled = configs['MemberScrapeEnabled']
     abandon_scrape_if_entity_exists = configs['AbandonScrapeIfEntityExists']
 
-    def __init__(self, coc_client: coc.Client = None, **kwargs) -> None:
+    def __init__(
+            self, 
+            coc_email: str,
+            coc_password: str,
+            coc_client: coc.Client = None,
+            **kwargs) -> None:
         """
         Parameters
         ----------
-        coc_client : coc.Client
-            (Default: None) The Clash of Clans API client object.
-        kwargs
-            The kwargs used to initialize the StorageHandler.
+        coc_email : str
+            The email address of the Clash of Clans account.
+        coc_password : str
+            The password of the Clash of Clans account.
+        coc_client : coc.Client, optional
+            (Default: None) The Clash of Clans client to use.
+        **kwargs
+            Keyword arguments to pass to the TableStorageHandler class.
         """
         
-        super().__init__(table_name=self.configs['TableName'], coc_client=coc_client, **kwargs)
+        super().__init__(coc_email=coc_email, coc_password=coc_password, coc_client=coc_client)
+        self.table_handler = TableStorageHandler(table_name=self.table_name, **kwargs)
         self.__login_kwargs = kwargs
 
     def __get_member_tags(self, clan: coc.Clan) -> Iterator[str]:
@@ -121,7 +135,7 @@ class ClanTableHandler(StorageHandler):
         LOGGER.debug(f'Checking if entity exists in table {self.table_name}.')
         partition_key = self.__get_partition_key(clan_tag)
         row_key = self.__get_row_key()
-        entity = self.try_get_entity(partition_key, row_key, select='PartitionKey', retries_remaining=self.retry_entity_extraction_count)
+        entity = self.table_handler.try_get_entity(partition_key, row_key, select='PartitionKey', retries_remaining=self.table_handler.retry_entity_extraction_count)
         return entity is not None
 
     async def __scrape_members_data(self, clan: coc.Clan) -> None:
@@ -140,7 +154,9 @@ class ClanTableHandler(StorageHandler):
 
         assert isinstance(clan, coc.Clan)
 
-        scraper = PlayerTableHandler(coc_client=self.coc_client, **self.__login_kwargs)
+        coc_email = self.__login_kwargs.get('coc_email')
+        coc_password = self.__login_kwargs.get('coc_password')
+        scraper = PlayerTableHandler(coc_email=coc_email, coc_password=coc_password, coc_client=self.coc_client, **self.__login_kwargs)
         member_tags = self.__get_member_tags(clan)
         await scraper.scrape_clan_members(member_tags, coc_client_handling=False)
 
@@ -221,7 +237,7 @@ class ClanTableHandler(StorageHandler):
         """
 
         entities = self.__convert_data_to_entity_list(clan)
-        self.write_data_to_table(entities=entities)
+        self.table_handler.write_data_to_table(entities=entities)
 
     async def scrape_location_clans(self, clans: list[coc.clans.RankedClan], coc_client_handling: bool = True) -> None:
         """
@@ -244,9 +260,10 @@ class ClanTableHandler(StorageHandler):
             await self.start_coc_client_session()
 
         for clan in clans:
+            # Abandon scrape of clan if the clan data already exists.
             should_abandon_scrape = self.abandon_scrape_if_entity_exists and self.__does_clan_data_exist(try_get_attr(clan, 'tag'))
             if should_abandon_scrape:
-                LOGGER.info(f'Abandoning clan scrape for the clan {try_get_attr(clan, "tag")} because the clan data already exists.')
+                LOGGER.info(f'Abandoning clan scrape for the clan {try_get_attr(clan, "tag")} from location {try_get_attr(clan.location, "id") if hasattr(clan, "location") else None} because the clan data already exists.')
                 continue
 
             try:
@@ -289,7 +306,7 @@ class ClanTableHandler(StorageHandler):
                     LOGGER.info(f'Abandoning member scrape for the clan {self.clans[i]} because the clan data already exists.')
                     self.clans.pop(i)
 
-            LOGGER.info(f'Clan table {self.table_name} is updating.')
+            LOGGER.debug(f'Clan table {self.table_name} is updating.')
             async for clan in self.coc_client.get_clans(self.clans):
                 try:
                     LOGGER.debug(f'Updating table with clan {clan} data.')

@@ -31,6 +31,6 @@ jobs:
           conda list
       - name: "Run Clash of Clans data scraping."
         run: |
-          python main.py --email ${{ secrets.COC_EMAIL }} --password ${{ secrets.COC_PASSWORD }} --name ${{ secrets.AZURE_ACCOUNT_NAME }} --access_key "${{ secrets.AZURE_ACCESS_KEY }}" --connection_string "${{ secrets.AZURE_CONNECTION_STRING }}" --verbosity 2
+          python main.py --email ${{ secrets.COC_EMAIL }} --password ${{ secrets.COC_PASSWORD }} --name ${{ secrets.AZURE_ACCOUNT_NAME }} --access_key "${{ secrets.AZURE_ACCESS_KEY }}" --connection_string "${{ secrets.AZURE_CONNECTION_STRING }}" --verbosity 1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

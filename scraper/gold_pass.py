@@ -4,19 +4,22 @@ import datetime
 
 from collections.abc import Iterator
 from scraper import CONFIG
-from scraper.storage import StorageHandler
+from scraper.coc_client import CocClientHandler
+from scraper.storage import TableStorageHandler
 from scraper.utils import try_get_attr
 from azure.data.tables import TableEntity
 
 LOGGER = logging.getLogger(__name__)
     
-class GoldPassTableHandler(StorageHandler):
+class GoldPassTableHandler(CocClientHandler):
     """
-    The Gold Pass table is updated once a month.  The table is updated with 
+    The Gold Pass table is updated once a month. The table is updated with 
     the current season's data.
 
     Attributes
     ----------
+    table_name : str
+        The name of the table in Azure Table Storage.
     scrape_enabled : bool
         Determines if data scraping should be performed.
     abandon_scrape_if_entity_exists : bool
@@ -30,18 +33,31 @@ class GoldPassTableHandler(StorageHandler):
     """
 
     configs = CONFIG['GoldPassSettings']
+    table_name = configs['TableName']
     scrape_enabled = configs['ScrapeEnabled']
     abandon_scrape_if_entity_exists = configs['AbandonScrapeIfEntityExists']
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(
+            self, 
+            coc_email: str,
+            coc_password: str,
+            coc_client: coc.Client = None,
+            **kwargs) -> None:
         """
         Parameters
         ----------
+        coc_email : str
+            The email address of the Clash of Clans account.
+        coc_password : str
+            The password of the Clash of Clans account.
+        coc_client : coc.Client, optional
+            (Default: None) The Clash of Clans client to use.
         **kwargs
-            Keyword arguments to pass to the StorageHandler class.
+            Keyword arguments to pass to the TableStorageHandler class.
         """
 
-        super().__init__(table_name=self.configs['TableName'], **kwargs)
+        super().__init__(coc_email=coc_email, coc_password=coc_password, coc_client=coc_client)
+        self.table_handler = TableStorageHandler(table_name=self.table_name, **kwargs)
 
     def __does_entity_exist(self) -> bool:
         """
@@ -56,7 +72,7 @@ class GoldPassTableHandler(StorageHandler):
         LOGGER.debug(f'Checking if entity exists in table {self.table_name}.')
         partition_key = self.__get_partition_key()
         row_key = self.__get_row_key()
-        entity = self.try_get_entity(partition_key, row_key, select='PartitionKey', retries_remaining=self.retry_entity_extraction_count)
+        entity = self.table_handler.try_get_entity(partition_key, row_key, select='PartitionKey', retries_remaining=self.table_handler.retry_entity_extraction_count)
         return entity is not None
 
     def __convert_timedelta_to_days(self, dt: datetime.timedelta) -> float:
@@ -179,13 +195,13 @@ class GoldPassTableHandler(StorageHandler):
 
         should_abandon_scrape = self.abandon_scrape_if_entity_exists and self.__does_entity_exist()
         if should_abandon_scrape:
-            LOGGER.info(f'Abandoning scrape because entity exists in table {self.table_name} and GoldPassSettings.AbandonScrapeIfEntityExists is {self.abandon_scrape_if_entity_exists}.')
+            LOGGER.debug(f'Abandoning scrape because entity exists in table {self.table_name} and GoldPassSettings.AbandonScrapeIfEntityExists is {self.abandon_scrape_if_entity_exists}.')
             return None
 
         LOGGER.debug('Scraping Gold Pass data.')
         data = await self.__get_data()
         entities = self.__convert_data_to_entity_list(data)
-        self.write_data_to_table(entities=entities)
+        self.table_handler.write_data_to_table(entities=entities)
 
     async def process_table(self, coc_client_handling: bool = True) -> None:
         """
@@ -212,7 +228,7 @@ class GoldPassTableHandler(StorageHandler):
         
         if self.scrape_enabled:
             try:
-                LOGGER.info(f'Gold Pass table {self.table_name} is updating.')
+                LOGGER.debug(f'Gold Pass table {self.table_name} is updating.')
                 await self.__update_table()
             except Exception as ex:
                 LOGGER.error(f'Unable to update table with Gold Pass Season data.')
