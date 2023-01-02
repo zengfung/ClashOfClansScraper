@@ -4,13 +4,14 @@ import datetime
 
 from collections.abc import Iterator
 from scraper import CONFIG
-from scraper.storage import StorageHandler
+from scraper.coc_client import CocClientHandler
+from scraper.storage import TableStorageHandler
 from scraper.utils import try_get_attr
 from azure.data.tables import TableEntity
 
 LOGGER = logging.getLogger(__name__)
 
-class TroopTableHandler(StorageHandler):
+class TroopTableHandler(CocClientHandler):
     """
     The troop table is updated once a month. This data is not scraped 
     directly from the Clash of Clans API, and is instead obtained from the 
@@ -36,12 +37,18 @@ class TroopTableHandler(StorageHandler):
     """
 
     configs = CONFIG['TroopSettings']
+    table_name = configs['TableName']
     categories = configs['Categories']
     scrape_enabled = configs['ScrapeEnabled']
     abandon_scrape_if_entity_exists = configs['AbandonScrapeIfEntityExists']
     null_id_scrape_enabled = configs['NullIdScrapeEnabled']
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(
+            self, 
+            coc_email: str,
+            coc_password: str,
+            coc_client: coc.Client = None,
+            **kwargs) -> None:
         """
         Parameters
         ----------
@@ -49,7 +56,8 @@ class TroopTableHandler(StorageHandler):
             Keyword arguments to pass to the StorageHandler class.
         """
 
-        super().__init__(table_name=self.configs['TableName'], **kwargs)
+        super().__init__(coc_email=coc_email, coc_password=coc_password, coc_client=coc_client)
+        self.table_handler = TableStorageHandler(table_name=self.table_name, **kwargs)
         self.categories = [category for category in self.categories if self.__is_valid_category(category)]
 
     def __is_valid_category(self, category: str) -> bool:
@@ -265,7 +273,7 @@ class TroopTableHandler(StorageHandler):
         is_home_village = 'true' if self.__is_item_from_home_village(item, category) else 'false'
 
         query_filter = f"RowKey eq '{row_key}' and Name eq '{item}' and IsHomeVillage eq {is_home_village}"
-        results = self.try_query_entities(query_filter=query_filter, retries_remaining=self.retry_entity_extraction_count, select='PartitionKey')
+        results = self.table_handler.try_query_entities(query_filter=query_filter, retries_remaining=self.retry_entity_extraction_count, select='PartitionKey')
         
         has_results = bool(next(results, False))
         return has_results
@@ -364,7 +372,7 @@ class TroopTableHandler(StorageHandler):
         """
         
         entities = self.__get_data(category)
-        self.write_data_to_table(entities=entities)
+        self.table_handler.write_data_to_table(entities=entities)
 
     async def process_table(self, coc_client_handling: bool = True) -> None:
         """
