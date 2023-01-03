@@ -1,9 +1,12 @@
+from functools import partial
 import logging
 import coc
 import datetime
+import multiprocessing
 
 from collections.abc import Iterator
 from scraper import CONFIG
+from scraper import coc_client
 from scraper.coc_client import CocClientHandler
 from scraper.storage import TableStorageHandler
 from scraper.utils import try_get_attr
@@ -133,7 +136,8 @@ class TroopTableHandler(CocClientHandler):
                 LOGGER.error(f'No available list for item type {category}!')
                 return None
 
-    def __get_entity_count(self, data: coc.abc.DataContainer) -> int:
+    @staticmethod
+    def __get_entity_count(data: coc.abc.DataContainer) -> int:
         """
         Returns the number of entities to insert/upsert to the table for a
         particular item.
@@ -158,7 +162,8 @@ class TroopTableHandler(CocClientHandler):
                 count = max(count, len(a))
         return count
 
-    def __convert_data_to_entity_list(self, data: coc.abc.DataContainer) -> Iterator[TableEntity]:
+    @staticmethod
+    def __convert_data_to_entity_list(data: coc.abc.DataContainer) -> Iterator[TableEntity]:
         """
         Converts the given data to a list of entities to insert/upsert to
         the table.
@@ -175,7 +180,7 @@ class TroopTableHandler(CocClientHandler):
         """
 
         LOGGER.debug(f'Creating entity for {try_get_attr(data, "name")} with ID {try_get_attr(data, "id")}.')
-        for i in range(self.__get_entity_count(data)):
+        for i in range(TroopTableHandler.__get_entity_count(data)):
             entity = TableEntity()
             # Mandatory keys
             # TODO: How to deal with hero pet scenario where there is no unique id?
@@ -188,9 +193,10 @@ class TroopTableHandler(CocClientHandler):
             entity['Name'] = try_get_attr(data, "name")
 
             # Details
-            lab_level = try_get_attr(data, "lab_level", i+1)
-            townhall_level = try_get_attr(data, "lab_to_townhall", lab_level) if lab_level is not None else None
-            upgrade_time = try_get_attr(data, "upgrade_time", i+1)
+            lab_level: int = try_get_attr(data, "lab_level", i+1)
+            upgrade_resource: coc.Resource = try_get_attr(data, "upgrade_resource")
+            townhall_level: int = try_get_attr(data, "lab_to_townhall", lab_level) if lab_level is not None else None
+            upgrade_time: coc.TimeDelta = try_get_attr(data, "upgrade_time", i+1)
             entity['Range'] = try_get_attr(data, "range", i+1)
             entity['Dps'] = try_get_attr(data, "dps", i+1)
             entity['GroundTarget'] = try_get_attr(data, "ground_target")
@@ -201,16 +207,16 @@ class TroopTableHandler(CocClientHandler):
             entity['Speed'] = try_get_attr(data, "speed", i+1)
             entity['Level'] = try_get_attr(data, "level", i+1, default=i+1)
             entity['UpgradeCost'] = try_get_attr(data, "upgrade_cost", i+1)
-            entity['UpgradeResource'] = try_get_attr(data, "upgrade_resource").name
+            entity['UpgradeResource'] = upgrade_resource.name if upgrade_resource is not None else None
             entity['UpgradeTime'] = upgrade_time.total_seconds() if upgrade_time is not None else None
             entity['IsHomeVillage'] = try_get_attr(data, "_is_home_village")
 
             # Spells and troops
             # Note: Cooldown and Duration only applies to super troops, and 
             # is always a list of 1 item.
-            cooldown = try_get_attr(data, "cooldown", 1)
-            duration = try_get_attr(data, "duration", 1)
-            original_troop = try_get_attr(data, "original_troop")
+            cooldown: coc.TimeDelta = try_get_attr(data, "cooldown", 1)
+            duration: coc.TimeDelta = try_get_attr(data, "duration", 1)
+            original_troop: coc.Troop = try_get_attr(data, "original_troop")
             entity['TrainingCost'] = try_get_attr(data, "training_cost", i+1)
             entity['TrainingTime'] = try_get_attr(data, "training_time", i+1)
             entity['IsElixirSpell'] = try_get_attr(data, "is_elixir_spell")
@@ -225,7 +231,7 @@ class TroopTableHandler(CocClientHandler):
             entity['OriginalTroopId'] = try_get_attr(original_troop, "id") if original_troop is not None else None
 
             # Heroes and pets
-            regeneration_time = try_get_attr(data, "regeneration_time", i+1)
+            regeneration_time: coc.TimeDelta = try_get_attr(data, "regeneration_time", i+1)
             entity['AbilityTime'] = try_get_attr(data, "ability_time", i+1)
             entity['AbilityTroopCount'] = try_get_attr(data, "ability_troop_count", i+1)
             entity['RequiredTownhallLevel'] = try_get_attr(data, "required_th_level", i+1)
@@ -233,7 +239,8 @@ class TroopTableHandler(CocClientHandler):
             
             yield entity
 
-    def __is_item_from_home_village(self, item: str, category: str) -> bool:
+    @staticmethod
+    def __is_item_from_home_village(item: str, category: str) -> bool:
         """
         Returns whether the given item is from the home village.
 
@@ -258,7 +265,8 @@ class TroopTableHandler(CocClientHandler):
             case _:
                 return True
 
-    def __does_item_data_exist(self, item: str, category: str) -> bool:
+    @staticmethod
+    def __does_item_data_exist(table_handler: TableStorageHandler, item: str, category: str) -> bool:
         """
         Returns whether or not the given item data exists in the table.
 
@@ -275,18 +283,19 @@ class TroopTableHandler(CocClientHandler):
             True if the item data exists in the table, otherwise False.
         """
 
-        LOGGER.debug(f'Checking if {item} exists in table {self.table_name}.')
+        LOGGER.debug(f'Checking if {item} exists in table {table_handler.table_name}.')
         
         row_key = datetime.datetime.now().strftime('%Y-%m')
-        is_home_village = 'true' if self.__is_item_from_home_village(item, category) else 'false'
+        is_home_village = 'true' if TroopTableHandler.__is_item_from_home_village(item, category) else 'false'
 
         query_filter = f"RowKey eq '{row_key}' and Name eq '{item}' and IsHomeVillage eq {is_home_village}"
-        results = self.table_handler.try_query_entities(query_filter=query_filter, retries_remaining=self.table_handler.retry_entity_extraction_count, select='PartitionKey')
+        results = table_handler.try_query_entities(query_filter=query_filter, retries_remaining=table_handler.retry_entity_extraction_count, select='PartitionKey')
         
         has_results = bool(next(results, False))
         return has_results
-    
-    def __get_item_data(self, item: str, category: str) -> coc.abc.DataContainer:
+
+    @staticmethod    
+    def __get_item_data(coc_client: coc.Client, item: str, category: str) -> coc.abc.DataContainer:
         """
         Gets the data for the given item and category.
 
@@ -305,22 +314,66 @@ class TroopTableHandler(CocClientHandler):
 
         match category:
             case "hero":
-                return self.coc_client.get_hero(item)
+                return coc_client.get_hero(item)
             case "pet":
-                return self.coc_client.get_pet(item)
+                return coc_client.get_pet(item)
             case "elixir_troop" | \
                 "dark_elixir_troop" | \
                 "siege_machine" | \
                 "super_troop" | \
                 "home_troop":
-                return self.coc_client.get_troop(item, is_home_village=True)
+                return coc_client.get_troop(item, is_home_village=True)
             case "builder_troop":
-                return self.coc_client.get_troop(item, is_home_village=False)
+                return coc_client.get_troop(item, is_home_village=False)
             case "spell":
-                return self.coc_client.get_spell(item)
+                return coc_client.get_spell(item)
             case _:
                 LOGGER.error(f'{category} is not a valid category.')
                 return None
+
+    @classmethod
+    def __get_and_convert_item_data(
+            self, 
+            coc_client: coc.Client, 
+            table_handler: TableStorageHandler, 
+            item: str, 
+            category: str) -> None:
+        """
+        Gets and processes the data for the given item and category.
+
+        Parameters
+        ----------
+        item : str
+            The item to get the data for.
+        category : str
+            The category of the item.
+        """
+
+        should_abaondon_scrape = self.abandon_scrape_if_entity_exists and self.__does_item_data_exist(table_handler=table_handler, item=item, category=category)
+        if should_abaondon_scrape:
+            LOGGER.debug(f'Abandoning scrape for {item} in category {category} because it already exists.')
+            return None
+
+        data = self.__get_item_data(coc_client=coc_client, item=item, category=category)
+
+        if data is None:
+            LOGGER.warning(f'No data found for {item}.')
+            LOGGER.warning(f'{item} data from {category} category is not scrape-able.')
+            return None
+
+        if try_get_attr(data, 'id') is None and \
+            not self.null_id_scrape_enabled:
+            LOGGER.warning(f'No ID found for {item} and null_id_scrape_enabled is set to {self.null_id_scrape_enabled}.')
+            LOGGER.warning(f'{item} data from {category} category is not scrape-able.')
+            return None
+
+        try:
+            LOGGER.debug(f'Scraping {item} data from {category} category.')
+            yield from self.__convert_data_to_entity_list(data)
+        except Exception as ex:
+            LOGGER.error(f'Unable to update table with {item} data from {category} category.')
+            LOGGER.error(str(ex))
+            return None
 
     def __get_data(self, category: str) -> Iterator[TableEntity]:
         """
@@ -339,31 +392,19 @@ class TroopTableHandler(CocClientHandler):
         """
 
         items = self.__get_item_list(category)
-        for item in items:
-            should_abaondon_scrape = self.abandon_scrape_if_entity_exists and self.__does_item_data_exist(item, category)
-            if should_abaondon_scrape:
-                LOGGER.debug(f'Abandoning scrape for {item} in category {category} because it already exists.')
-                continue
-
-            data = self.__get_item_data(item, category)
-
-            if data is None:
-                LOGGER.warning(f'No data found for {item}.')
-                LOGGER.warning(f'{item} data from {category} category is not scrape-able.')
-                continue
-
-            if try_get_attr(data, 'id') is None and \
-               not self.null_id_scrape_enabled:
-                LOGGER.warning(f'No ID found for {item} and null_id_scrape_enabled is set to {self.null_id_scrape_enabled}.')
-                LOGGER.warning(f'{item} data from {category} category is not scrape-able.')
-                continue
-
-            try:
-                LOGGER.debug(f'Scraping {item} data from {category} category.')
-                yield from self.__convert_data_to_entity_list(data)
-            except Exception as ex:
-                LOGGER.error(f'Unable to update table with {item} data from {category} category.')
-                LOGGER.error(str(ex))
+        get_and_convert_item_data_from_category = partial(
+            self.__get_and_convert_item_data, 
+            coc_client=self.coc_client, 
+            table_handler=self.table_handler, 
+            category=category)
+        
+        with multiprocessing.Pool() as pool:
+            LOGGER.info(f'Running {pool._processes} processes to get item data from category {category}.')
+            results = pool.imap_unordered(get_and_convert_item_data_from_category, items)
+            for result in results:
+                if result is not None:
+                    LOGGER.critical(f'Result is of type {type(result)}.')
+                    yield from result
 
     def __update_table(self, category: str) -> None:
         """
