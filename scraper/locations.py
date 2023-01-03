@@ -24,6 +24,8 @@ class LocationTableHandler(CocClientHandler):
 
     Attributes
     ----------
+    table_name : str
+        The name of the table in Azure Table Storage.
     locations : List[int]
         The list of locations to scrape.
     scrape_enabled : bool
@@ -70,10 +72,14 @@ class LocationTableHandler(CocClientHandler):
         """
         Parameters
         ----------
-        coc_client : coc.Client
-            (Default: None) The Clash of Clans API client object.
-        kwargs
-            The kwargs used to initialize the StorageHandler.
+        coc_email : str
+            The email address of the Clash of Clans account.
+        coc_password : str
+            The password of the Clash of Clans account.
+        coc_client : coc.Client, optional
+            (Default: None) The Clash of Clans client to use.
+        **kwargs
+            Keyword arguments to pass to the TableStorageHandler class.
         """
 
         super().__init__(coc_email=coc_email, coc_password=coc_password, coc_client=coc_client)
@@ -239,7 +245,7 @@ class LocationTableHandler(CocClientHandler):
                     LOGGER.info("Scraping clans from specified locations.")
                     location_ids = self.locations
 
-                LOGGER.info("Scraping clans by location.")
+                LOGGER.debug("Scraping clans by location.")
                 for location in location_ids:
                     LOGGER.info(f"Scraping {self.clan_scrape_limit} clans in {location}.")
                     clans = await self.coc_client.get_location_clans(location_id=location, limit=self.clan_scrape_limit)

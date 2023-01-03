@@ -20,6 +20,8 @@ class PlayerTableHandler(CocClientHandler):
 
     Attributes
     ----------
+    table_name : str
+        The name of the table in Azure Table Storage.
     players : list[str]
         A list of player tags whose data needs to be scraped.
     scrape_enabled : bool
@@ -53,10 +55,14 @@ class PlayerTableHandler(CocClientHandler):
         """
         Parameters
         ----------
-        coc_client : coc.Client
-            (Default: None) The Clash of Clans API client object.
+        coc_email : str
+            The email address of the Clash of Clans account.
+        coc_password : str
+            The password of the Clash of Clans account.
+        coc_client : coc.Client, optional
+            (Default: None) The Clash of Clans client to use.
         **kwargs
-            Keyword arguments to pass to the StorageHandler class.
+            Keyword arguments to pass to the TableStorageHandler class.
         """
 
         super().__init__(coc_email=coc_email, coc_password=coc_password, coc_client=coc_client)
@@ -248,13 +254,15 @@ class PlayerTableHandler(CocClientHandler):
 
         LOGGER.debug(f'Checking if {player} exists in table {self.table_name}.')
         
+        # To speed up the checking process, we assume that every player that we
+        # want to scrape has at least unlocked barbarians (troop_id: 4000000),
+        # which is the 1st troop to be unlocked in the game. 
+        barbarian_id = 4000000
+        partition_key = f'{player.lstrip("#")}-{barbarian_id}'
         row_key = self.__get_row_key()
 
-        query_filter = f"RowKey eq '{row_key}' and Tag eq '{player}'"
-        results = self.table_handler.try_query_entities(query_filter=query_filter, retries_remaining=self.table_handler.retry_entity_extraction_count, select='PartitionKey')
-        
-        has_results = bool(next(results, False))
-        return has_results
+        entity = self.table_handler.try_get_entity(partition_key, row_key, select='PartitionKey', retries_remaining=self.table_handler.retry_entity_extraction_count)
+        return entity is not None
 
     async def __update_table(self, player: str) -> None:
         """

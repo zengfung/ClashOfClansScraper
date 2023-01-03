@@ -9,13 +9,14 @@ LOGGER = logging.getLogger(__name__)
 
 class CocClientHandler(object):
     """
-    The storage handler object is used to connect to the Clash of Clans API
-    client and a table in Azure Table Storage. Connection retries and data 
-    modifications on the corresponding table via inserting, upserting, and 
-    deleting entities are handled by this class.
+    The Clash of Clans client handler object is used to connect to the Clash
+    of Clans API client. Connection starts, stops are handled by this class.
 
     Attributes
     ----------
+    restart_sleep_time : int
+        The number of seconds to sleep after closing the Clash of Clans API
+        client session prior to a restart.
     coc_client : coc.Client
         The Clash of Clans API client object.
     

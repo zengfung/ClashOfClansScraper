@@ -17,10 +17,10 @@ LOGGER = logging.getLogger(__name__)
 
 class TableStorageHandler(object):
     """
-    The storage handler object is used to connect to the Clash of Clans API
-    client and a table in Azure Table Storage. Connection retries and data 
-    modifications on the corresponding table via inserting, upserting, and 
-    deleting entities are handled by this class.
+    The table storage handler object is used to connect to a table in Azure
+    Table Storage. Connection retries and data modifications on the 
+    corresponding table via inserting, upserting, and deleting entities are
+    handled by this class.
 
     Attributes
     ----------
@@ -45,6 +45,9 @@ class TableStorageHandler(object):
         The TableServiceClient object connected to the Azure Table Storage.
     table_client : azure.data.tables.TableClient
         The TableClient object connected to the table in Azure Table Storage.
+    thread_worker_count : int
+        The number of threads to use when writing data to the table in Azure
+        Table Storage.
 
     Methods
     -------
@@ -146,7 +149,9 @@ class TableStorageHandler(object):
 
         Parameters
         ----------
-        name : str
+        table_service_client : azure.data.tables.TableServiceClient
+            The TableServiceClient object connected to the Azure Table Storage.
+        table_name : str
             The name of the table in Azure Table Storage account.
 
         Returns
@@ -241,17 +246,18 @@ class TableStorageHandler(object):
         """
         
         LOGGER.debug(f'Writing entities to the table {self.table_name}.')
+        try_create_or_upsert_entity = partial(
+            self.try_create_or_upsert_entity_with_retry, 
+            table_client=self.table_client, 
+            table_name=self.table_name, 
+            account_name=self.__account_name, 
+            access_key=self.__access_key, 
+            connection_string=self.__connection_string,
+            retries_remaining=self.retry_entity_creation_count)
+            
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.thread_worker_count) as executor:
             LOGGER.debug(f'Running thread executor with at most {executor._max_workers} threads.')
             try:
-                try_create_or_upsert_entity = partial(
-                    self.try_create_or_upsert_entity_with_retry, 
-                    table_client=self.table_client, 
-                    table_name=self.table_name, 
-                    account_name=self.__account_name, 
-                    access_key=self.__access_key, 
-                    connection_string=self.__connection_string,
-                    retries_remaining=self.retry_entity_creation_count)
                 results = executor.map(try_create_or_upsert_entity, entities)
                 for result in results:
                     LOGGER.debug(result)
