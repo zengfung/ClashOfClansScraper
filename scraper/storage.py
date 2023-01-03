@@ -7,6 +7,8 @@ from collections.abc import Iterator
 from azure.core.exceptions import ResourceExistsError
 from azure.core.exceptions import ResourceNotFoundError
 from azure.core.exceptions import ClientAuthenticationError
+from azure.core.exceptions import ServiceResponseError
+from azure.core.exceptions import ServiceResponseTimeoutError
 from azure.core.credentials import AzureNamedKeyCredential
 from azure.data.tables import TableServiceClient
 from azure.data.tables import TableClient
@@ -219,8 +221,8 @@ class TableStorageHandler(object):
                 except Exception as ex:
                     LOGGER.error('Failed to upsert entity.')
                     LOGGER.error(str(ex))
-        except ClientAuthenticationError as ex:
-            LOGGER.error('Client authentication error encountered, attempting re-login and retry entity creation.')
+        except (ClientAuthenticationError, ServiceResponseError, ServiceResponseTimeoutError) as ex:
+            LOGGER.error(f'Encountered {type(ex)}, attempting re-login and retry entity creation.')
             LOGGER.error(str(ex))
             table_service_client = self.connect_table_service_client(account_name=account_name, access_key=access_key, connection_string=connection_string)
             table_client = self.connect_table_client(table_service_client=table_service_client, table_name=table_name)
