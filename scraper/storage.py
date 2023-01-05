@@ -229,7 +229,14 @@ class TableStorageHandler(object):
 
             if self.retry_entity_creation_enabled and retries_remaining > 0:
                 LOGGER.debug(f'Retrying entity creation {retries_remaining} more times.')
-                self.try_create_or_upsert_entity_with_retry(entity=entity, retries_remaining=retries_remaining-1)
+                self.try_create_or_upsert_entity_with_retry(
+                    entity=entity, 
+                    retries_remaining=retries_remaining-1,
+                    table_client=table_client,
+                    table_name=table_name,
+                    account_name=account_name,
+                    access_key=access_key,
+                    connection_string=connection_string)
             else:
                 LOGGER.debug('Entity creation retry limit reached / Retry not enabled, skipping entity creation.')
 
