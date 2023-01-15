@@ -238,7 +238,7 @@ class TableStorageHandler(object):
                     access_key=access_key,
                     connection_string=connection_string)
             else:
-                LOGGER.debug('Entity creation retry limit reached / Retry not enabled, skipping entity creation.')
+                LOGGER.warning('Entity creation retry limit reached / Retry not enabled, skipping entity creation.')
 
     def write_data_to_table(self, entities: Iterator[TableEntity]) -> None:
         """
