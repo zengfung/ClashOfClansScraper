@@ -1,11 +1,11 @@
 CocClient:
-  RestartSleepTime: 5
+  RestartSleepTime: 1
 
 StorageHandlerSettings:
   RetryEntityCreationEnabled: true
-  RetryEntityCreationCount: 1
+  RetryEntityCreationCount: 5
   RetryEntityExtractionEnabled: true
-  RetryEntityExtractionCount: 1
+  RetryEntityExtractionCount: 5
   UpsertAtFailedPushEnabled: true
   ThreadWorkerCount: 9
 
