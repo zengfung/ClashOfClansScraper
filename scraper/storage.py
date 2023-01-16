@@ -1,7 +1,7 @@
 import logging
 import concurrent.futures
 
-from scraper import CONFIG
+from . import CONFIG
 from functools import partial
 from collections.abc import Iterator
 from azure.core.exceptions import ResourceExistsError
@@ -124,6 +124,7 @@ class TableStorageHandler(object):
         if ((account_name is None or access_key is None) and \
             connection_string is None):
             LOGGER.error('At least one of (account_name + access_key) or connection_string must contain a value.')
+            return None
 
         LOGGER.debug(f'Connecting to table service client.')
         if (connection_string is not None):
@@ -132,7 +133,7 @@ class TableStorageHandler(object):
                 return TableServiceClient.from_connection_string(conn_str=connection_string)
             except Exception as ex:
                 LOGGER.error('Connection attempt via connection string failed.')
-                LOGGER.error(str(ex))
+                LOGGER.error(f'{type(ex)} - {str(ex)}')
         
         if (account_name is not None and access_key is not None):
             try:
@@ -141,7 +142,7 @@ class TableStorageHandler(object):
                 return TableServiceClient(endpoint=f'https://{account_name}.table.core.windows.net/', credential=credential)
             except Exception as ex:
                 LOGGER.error('Connection attempt via account name and access key failed.')
-                LOGGER.error(str(ex))
+                LOGGER.error(f'{type(ex)} - {str(ex)}')
 
     @staticmethod
     def connect_table_client(table_service_client: TableServiceClient, table_name:str) -> TableClient:
@@ -161,6 +162,9 @@ class TableStorageHandler(object):
         azure.data.tables.TableClient
             The TableClient object connected to the table in Azure Table Storage.
         """
+
+        if (table_service_client is None):
+            return None
 
         try:
             LOGGER.debug(f'Connecting to table client {table_name}.')
