@@ -13,7 +13,7 @@ on:
       - environment.yml
   workflow_dispatch:
 jobs:
-  ClashOfClansScraper:
+  Tests:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -30,7 +30,7 @@ jobs:
       - run: |
           conda info
           conda list
-      - name: "Run Clash of Clans data scraping."
+      - name: "Run unit tests."
         run: |
           pytest --email ${{ secrets.COC_EMAIL }} --password ${{ secrets.COC_PASSWORD }} --name ${{ secrets.AZURE_ACCOUNT_NAME }} --access_key "${{ secrets.AZURE_ACCESS_KEY }}" --connection_string "${{ secrets.AZURE_CONNECTION_STRING }}"
         env:
