@@ -4,6 +4,7 @@ import datetime
 
 from collections.abc import Iterator
 from scraper import CONFIG
+from scraper.player_troops import PlayerTroopsTableHandler
 from scraper.storage import TableStorageHandler
 from scraper.coc_client import CocClientHandler
 from scraper.utils import try_get_attr
@@ -66,38 +67,20 @@ class PlayerTableHandler(CocClientHandler):
         """
 
         super().__init__(coc_email=coc_email, coc_password=coc_password, coc_client=coc_client)
+        self.troop_handler = PlayerTroopsTableHandler(**kwargs)
         self.table_handler = TableStorageHandler(table_name=self.table_name, **kwargs)
 
-    def __is_super_troop_active(self, troop: coc.abc.DataContainer, data: coc.abc.BasePlayer) -> bool:
+    def __convert_data_to_entity_list(self, data: coc.abc.BasePlayer) -> Iterator[TableEntity]:
         """
-        Checks if a super troop is active for the player.
-        
-        Parameters
-        ----------
-        troop : coc.abc.DataContainer
-            The troop to check.
-        data : coc.abc.BasePlayer
-            The player data to check.
-
-        Returns
-        -------
-        bool
-            Whether the super troop is active or not.
-        """
-
-        return troop in data.home_troops
-
-    def __add_base_details_to_entity(self, data: coc.abc.BasePlayer) -> TableEntity:
-        """
-        Adds the base details to the entity.
+        Converts the data to a list of entities.
 
         Parameters
         ----------
         data : coc.abc.BasePlayer
             The player data to add to the entity.
 
-        Returns
-        -------
+        Yields
+        ------
         TableEntity
             The entity corresponding to the input player and their base
             information.
@@ -106,7 +89,7 @@ class PlayerTableHandler(CocClientHandler):
         entity = TableEntity()
 
         # Mandatory keys
-        # PartitionKey to be defined as '{PlayerTag}-{TroopId}' when extracting troop details
+        entity['PartitionKey'] = self.__get_partition_key(player=try_get_attr(data, 'tag'))
         entity['RowKey'] = self.__get_row_key()
 
         # Identity keys
@@ -139,72 +122,7 @@ class PlayerTableHandler(CocClientHandler):
         entity['TownHallWeapon'] = try_get_attr(data, 'town_hall_weapon')
         entity['BuilderHall'] = try_get_attr(data, 'builder_hall')
 
-        return entity
-
-    def __add_troop_details_to_entity(self, base_entity: TableEntity, data: coc.abc.BasePlayer) -> Iterator[TableEntity]:
-        """
-        Creates a new azure.data.tables.TableEntity object for each troop
-        based on the player's base details and adds the troop details to the
-        entity.
-
-        Parameters
-        ----------
-        base_entity : azure.core.tables.TableEntity
-            The entity containing the base details to add the troop details to.
-        data : coc.abc.BasePlayer
-            The player data to add to the entity.
-        
-        Yields
-        ------
-        azure.core.tables.TableEntity
-            The entity corresponding to the input player and their troop 
-            information.
-        """
-
-        inactive_super_troops = list(set(data.super_troops) - set(data.home_troops))
-        troop_list = data.heroes + data.hero_pets + data.spells + data.home_troops + data.builder_troops + inactive_super_troops
-        
-        for troop in troop_list:
-            # Skip troop if troop object is None or its Id and Level is None
-            if (troop is None or \
-                try_get_attr(troop, 'id') is None or \
-                try_get_attr(troop, 'level') is None):
-                LOGGER.debug(f'Skipping {troop} as it is either (1) None, (2) has None id, or (3) has None level.')
-                continue
-            
-            entity = base_entity.copy()
-
-            # PartitionKey to be defined as '{PlayerTag}-{TroopId}'
-            LOGGER.debug(f'Adding {troop} to entity.')
-            entity['PartitionKey'] = f"{try_get_attr(data, 'tag').lstrip('#')}-{try_get_attr(troop, 'id')}"
-
-            # Get troop details
-            entity['TroopId'] = try_get_attr(troop, 'id')
-            entity['TroopLevel'] = try_get_attr(troop, 'level')
-            entity['TroopVillage'] = try_get_attr(troop, 'village')
-            entity['TroopTownhallMaxLevel'] = troop.get_max_level_for_townhall(data.town_hall) if hasattr(troop, 'get_max_level_for_townhall') else None
-            entity['TroopIsMaxForTownhall'] = try_get_attr(data, 'is_max_for_townhall')
-            entity['TroopIsActive'] = self.__is_super_troop_active(troop, data) if try_get_attr(data, 'is_super_troop') is not None else None
-            
-            yield entity
-
-    def __convert_data_to_entity_list(self, data: coc.abc.BasePlayer) -> Iterator[TableEntity]:
-        """
-        Converts the data to a list of entities.
-
-        Parameters
-        ----------
-        data : coc.abc.BasePlayer
-            The player data to convert to entities.
-        
-        Yields
-        ------
-        azure.core.tables.TableEntity
-            All the entities corresponding to the input player.
-        """
-
-        base_entity = self.__add_base_details_to_entity(data)
-        yield from self.__add_troop_details_to_entity(base_entity, data)
+        yield entity
 
     async def __get_data(self, player: str) -> Iterator[TableEntity]:
         """
@@ -223,7 +141,27 @@ class PlayerTableHandler(CocClientHandler):
         """
 
         data = await self.coc_client.get_player(player_tag=player)
+        self.troop_handler.process_table(data)
+
         return self.__convert_data_to_entity_list(data)
+
+    def __get_partition_key(self, player: str) -> str:
+        """
+        Gets the partition key to use for the table.
+
+        Parameters
+        ----------
+        player : str
+            The player tag to get the partition key for.
+
+        Returns
+        -------
+        str
+            The partition key to use for the table.
+        """
+
+        return player.lstrip("#")
+
 
     def __get_row_key(self) -> str:
         """
@@ -254,11 +192,7 @@ class PlayerTableHandler(CocClientHandler):
 
         LOGGER.debug(f'Checking if {player} exists in table {self.table_name}.')
         
-        # To speed up the checking process, we assume that every player that we
-        # want to scrape has at least unlocked barbarians (troop_id: 4000000),
-        # which is the 1st troop to be unlocked in the game. 
-        barbarian_id = 4000000
-        partition_key = f'{player.lstrip("#")}-{barbarian_id}'
+        partition_key = self.__get_partition_key(player=player)
         row_key = self.__get_row_key()
 
         entity = self.table_handler.try_get_entity(partition_key, row_key, select='PartitionKey', retries_remaining=self.table_handler.retry_entity_extraction_count)
