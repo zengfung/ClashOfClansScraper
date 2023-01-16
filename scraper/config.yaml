@@ -21,6 +21,13 @@ GoldPassSettings:
   ScrapeEnabled: true
   AbandonScrapeIfEntityExists: true
 
+PlayerTroopsSettings:
+  TableName: "PlayerTroop"
+  ScrapeEnabled: true
+  AbandonScrapeIfEntityExists: true
+  # Troop Id: Barbarian - 4000000
+  ValidationTroopId: 4000000
+
 PlayerSettings:
   TableName: "Player"
   ScrapeEnabled: true
