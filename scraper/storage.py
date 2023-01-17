@@ -171,7 +171,7 @@ class TableStorageHandler(object):
             return table_service_client.create_table_if_not_exists(table_name=table_name)
         except Exception as ex:
             LOGGER.error(f'Failed to connect to table client {table_name}.')
-            LOGGER.error(str(ex))
+            LOGGER.error(f'{type(ex)} - {str(ex)}')
 
     @classmethod
     def try_create_or_upsert_entity_with_retry(

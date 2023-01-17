@@ -48,3 +48,8 @@ class TestTableStorageConnection:
         table_service_client = TableStorageHandler.connect_table_service_client(account_name=name, access_key=access_key)
         table_client = TableStorageHandler.connect_table_client(table_service_client=table_service_client, table_name=self.dummy_table_name)
         assert isinstance(table_client, TableClient)
+
+    def test_connect_table_client_failure__table_name(self):
+        table_service_client = TableStorageHandler.connect_table_service_client(connection_string=self.dummy_fail_connection_string)
+        table_client = TableStorageHandler.connect_table_client(table_service_client=table_service_client, table_name=self.dummy_table_name)
+        assert table_client is None
