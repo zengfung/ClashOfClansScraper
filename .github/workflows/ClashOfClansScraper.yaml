@@ -6,10 +6,6 @@ on:
     branches:
       - master
   pull_request:
-    paths:
-      - scraper/**
-      - main.py
-      - environment.yml
   workflow_dispatch:
 jobs:
   ClashOfClansScraper:
