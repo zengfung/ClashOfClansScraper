@@ -17,6 +17,7 @@ jobs:
     defaults:
       run:
         shell: pwsh
+    timeout-minutes: 900
     steps:
       - uses: actions/checkout@v2
       - name: "Activate Conda environment."
