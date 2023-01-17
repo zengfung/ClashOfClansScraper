@@ -6,10 +6,6 @@ on:
     branches:
       - master
   pull_request:
-    paths:
-      - scraper/**
-      - main.py
-      - environment.yml
   workflow_dispatch:
 jobs:
   ClashOfClansScraper:
@@ -17,6 +13,7 @@ jobs:
     defaults:
       run:
         shell: pwsh
+    timeout-minutes: 900
     steps:
       - uses: actions/checkout@v2
       - name: "Activate Conda environment."
