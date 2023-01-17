@@ -44,8 +44,8 @@ class TestTableStorageConnection:
         client = TableStorageHandler.connect_table_service_client()
         assert client is None
 
-    def test_connect_table_client_success__table_name(self, name: str, access_key: str):
-        table_service_client = TableStorageHandler.connect_table_service_client(account_name=name, access_key=access_key)
+    def test_connect_table_client_success__table_name(self, connection_string: str):
+        table_service_client = TableStorageHandler.connect_table_service_client(connection_string=connection_string)
         table_client = TableStorageHandler.connect_table_client(table_service_client=table_service_client, table_name=self.dummy_table_name)
         assert isinstance(table_client, TableClient)
 
