@@ -1,0 +1,37 @@
+name: Tests
+on:
+  schedule:
+    - cron: 0 0 * * *
+  push:
+    branches:
+      - master
+  pull_request:
+    paths:
+      - scraper/**
+      - tests/**
+      - main.py
+      - environment.yml
+  workflow_dispatch:
+jobs:
+  Tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Activate Conda environment."
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          activate-environment: clash-of-clans
+          condarc-file: condarc.yml
+          environment-file: environment.yml
+      - run: |
+          conda info
+          conda list
+      - name: "Run unit tests."
+        run: |
+          pytest --email ${{ secrets.COC_EMAIL }} --password ${{ secrets.COC_PASSWORD }} --name ${{ secrets.AZURE_ACCOUNT_NAME }} --access_key "${{ secrets.AZURE_ACCESS_KEY }}" --connection_string "${{ secrets.AZURE_CONNECTION_STRING }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
